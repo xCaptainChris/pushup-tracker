@@ -64,6 +64,7 @@
         
         .btn-col { display: flex; flex-direction: column; gap: 8px; }
         .btn { background: #2d2d2d; color: white; border: 1px solid #3f3f3f; border-radius: 8px; padding: 12px; font-weight: 700; font-size: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; }
+        .btn:active { background: #3d3d3d; }
         .btn span { font-size: 9px; color: #777; font-weight: 600; margin-top: 1px; }
         .btn-neg { background: #262626; height: 100%; justify-content: center; font-size: 20px; border-color: #333; }
         
@@ -156,7 +157,6 @@
     </div>
 
     <script>
-        // HARDCODED GOOGLE DEPLOYMENT LINK
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxxxrcbUtjxBVHJl_LaStWLn9fhnon0S79rewb1D1W_kMtQXbE7gjjWySoTtXVDmahO/exec"; 
 
         let currentCounter = 0;
@@ -352,7 +352,7 @@
 
             if (repsToLog === 0) return;
 
-            // CRITICAL FIX: Direct target logs explicitly bind directly to current timeline viewpoint context!
+            // Direct target logs explicitly bind directly to current timeline viewpoint context
             const targetTimestamp = new Date(selectedViewDateStr + "T12:00:00");
 
             // Optimistic UI Append
