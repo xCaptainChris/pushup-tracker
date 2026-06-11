@@ -5,14 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>REP MATRIX</title>
     
-    <link rel="icon" type="image/svg+xml" href="icon-light.svg" media="(prefers-color-scheme: light)">
-    <link rel="icon" type="image/svg+xml" href="icon-dark.svg" media="(prefers-color-scheme: dark)">
-
     <link rel="apple-touch-icon" href="icon-dark.png">
 
-    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22Pushup%20Tracker%22,%22short_name%22:%22Pushups%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22#121212%22,%22theme_color%22:%22#121212%22,%22icons%22:[{%22src%22:%22icon-dark.png%22,%22sizes%22:%22512x512%22,%22type%22:%22image/png%22}]}">
-    
-    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22Pushup%20Tracker%22,%22short_name%22:%22Pushups%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22#121212%22,%22theme_color%22:%22#121212%22}">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
         body { background-color: #121212; color: #ffffff; padding: 15px; display: flex; flex-direction: column; height: 100vh; height: -webkit-fill-available; -webkit-user-select: none; user-select: none; }
@@ -32,17 +26,31 @@
         
         .status-container { display: flex; align-items: center; gap: 6px; background: #222; padding: 3px 8px; border-radius: 12px; border: 1px solid #333; }
         .loading-status { font-size: 10px; color: #007aff; font-weight: bold; }
-        .refresh-btn { background: none; border: none; color: #aaa; cursor: pointer; font-size: 10px; display: flex; align-items: center; justify-content: center; }
+        .refresh-btn { background: none; border: none; color: #aaa; cursor: pointer; font-size: 10px; }
 
-        .chart-container { display: flex; justify-content: space-around; align-items: flex-end; height: 165px; padding-top: 5px; }
-        .bar-wrapper { display: flex; flex-direction: column; align-items: center; width: 30%; height: 100%; justify-content: flex-end; }
+        .chart-container { display: flex; justify-content: space-around; align-items: flex-end; height: 175px; padding-top: 5px; position: relative; }
+        .bar-wrapper { display: flex; flex-direction: column; align-items: center; width: 32%; height: 100%; justify-content: flex-end; position: relative; }
         
-        .streak-badge { font-size: 11px; font-weight: 800; color: #ff9500; margin-bottom: 6px; background: rgba(255,149,0,0.1); padding: 2px 6px; border-radius: 8px; border: 1px solid rgba(255,149,0,0.2); display: inline-flex; align-items: center; gap: 2px; }
+        .streak-badge { font-size: 11px; font-weight: 800; color: #ff9500; margin-bottom: 6px; background: rgba(255,149,0,0.1); padding: 2px 6px; border-radius: 8px; border: 1px solid rgba(255,149,0,0.2); }
         
-        .bar-outer { background: #2d2d2d; width: 38px; height: 110px; border-radius: 6px; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; position: relative; border: 1px solid #3a3a3a; }
-        .bar-inner { background: #4cd964; width: 100%; height: 0%; transition: height 0.4s cubic-bezier(0.1, 1, 0.1, 1); }
-        .bar-label { margin-top: 8px; font-size: 13px; color: #eee; font-weight: 700; }
-        .bar-count { font-size: 11px; margin-bottom: 2px; position: absolute; width: 100%; text-align: center; bottom: 4px; font-weight: 900; color: #000; }
+        .bar-outer { background: #2d2d2d; width: 42px; height: 110px; border-radius: 6px; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; position: relative; border: 1px solid #3a3a3a; }
+        
+        .bar-layer { width: 100%; height: 0%; transition: height 0.6s cubic-bezier(0.1, 1, 0.1, 1), clip-path 0.6s cubic-bezier(0.1, 1, 0.1, 1); position: absolute; bottom: 0; left: 0; border-radius: 0 0 5px 5px; }
+        .layer-base { background: #4cd964; z-index: 1; }
+        .layer-backfill { background: linear-gradient(180deg, #007aff, #00d2ff); z-index: 2; box-shadow: 0 0 8px rgba(0,122,255,0.6); }
+        .layer-flame { background: linear-gradient(0deg, #ff4500, #ff9500, #ffcc00); z-index: 3; animation: flamePulse 1.5s ease-in-out infinite alternate; box-shadow: 0 -2px 10px rgba(255,149,0,0.5); }
+
+        @keyframes flamePulse {
+            0% { filter: brightness(0.9) contrast(1); opacity: 0.92; }
+            100% { filter: brightness(1.2) contrast(1.1); opacity: 1; }
+        }
+
+        .bar-label { margin-top: 8px; font-size: 13px; color: #eee; font-weight: 700; text-align: center; }
+        .bar-count { font-size: 11px; margin-bottom: 2px; position: absolute; width: 100%; text-align: center; bottom: 4px; font-weight: 900; color: #000; z-index: 10; }
+
+        .playground-legend { display: flex; justify-content: center; gap: 12px; font-size: 10px; font-weight: 700; margin-top: -4px; margin-bottom: 4px; }
+        .legend-item { display: flex; align-items: center; gap: 4px; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; }
 
         .accordion { background: #1a1a1a; border-radius: 12px; border: 1px solid #262626; overflow: hidden; }
         .accordion-header { padding: 15px; display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 14px; color: #ddd; cursor: pointer; }
@@ -51,7 +59,7 @@
         
         .accordion-content { display: none; padding: 0 15px 15px 15px; overflow: hidden; font-size: 13px; color: #aaa; }
         .accordion.open .accordion-content { display: block; }
-        .log-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #262626; }
+        .log-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #262626; font-size: 13px; }
 
         .trend-row { display: flex; flex-direction: column; gap: 4px; margin-top: 12px; }
         .trend-meta { display: flex; justify-content: space-between; font-size: 13px; color: #eee; font-weight: 600; }
@@ -72,11 +80,10 @@
         .btn { background: #2d2d2d; color: white; border: 1px solid #3f3f3f; border-radius: 8px; padding: 12px; font-weight: 700; font-size: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; flex: 1; }
         .btn:active { background: #3d3d3d; }
         .btn span { font-size: 9px; color: #777; font-weight: 600; margin-top: 1px; }
-        
         .btn-neg { background: #262626; border-color: #333; }
         
         .manual-input-box { background: #121212; border: 1px solid #333; border-radius: 6px; padding: 6px; width: 100%; text-align: center; color: white; font-size: 14px; margin-top: 5px; }
-        .submit-btn { background: #ffffff; color: #000000; border: none; border-radius: 8px; padding: 14px; font-weight: 900; font-size: 16px; letter-spacing: 1.5px; text-align: center; width: 100%; margin-top: 5px; cursor: pointer; box-shadow: 0 4px 12px rgba(255,255,255,0.1); }
+        .submit-btn { background: #ffffff; color: #000000; border: none; border-radius: 8px; padding: 14px; font-weight: 900; font-size: 16px; letter-spacing: 1.5px; text-transform: uppercase; text-align: center; width: 100%; margin-top: 5px; cursor: pointer; box-shadow: 0 4px 12px rgba(255,255,255,0.1); }
         .submit-btn:disabled { background: #444; color: #888; box-shadow: none; }
     </style>
 </head>
@@ -100,20 +107,41 @@
                 </div>
             </div>
             
+            <div class="playground-legend">
+                <div class="legend-item"><div class="dot" style="background:#4cd964;"></div> Normal (Green)</div>
+                <div class="legend-item"><div class="dot" style="background:#007aff;"></div> Backfilled (Blue)</div>
+                <div class="legend-item"><div class="dot" style="background:#ff9500;"></div> Flame Overflow</div>
+            </div>
+            
             <div class="chart-container">
-                <div class="bar-wrapper">
+                <div class="bar-wrapper" id="wrap-Anthony">
                     <div class="streak-badge" id="streak-Anthony">🔥 0</div>
-                    <div class="bar-outer"><div class="bar-count" id="count-Anthony">0</div><div class="bar-inner" id="bar-Anthony"></div></div>
+                    <div class="bar-outer">
+                        <div class="bar-count" id="count-Anthony">0</div>
+                        <div class="bar-layer layer-base" id="bar-base-Anthony"></div>
+                        <div class="bar-layer layer-backfill" id="bar-backfill-Anthony"></div>
+                        <div class="bar-layer layer-flame" id="bar-flame-Anthony"></div>
+                    </div>
                     <div class="bar-label">Anthony</div>
                 </div>
-                <div class="bar-wrapper">
+                <div class="bar-wrapper" id="wrap-Nick">
                     <div class="streak-badge" id="streak-Nick">🔥 0</div>
-                    <div class="bar-outer"><div class="bar-count" id="count-Nick">0</div><div class="bar-inner" id="bar-Nick"></div></div>
+                    <div class="bar-outer">
+                        <div class="bar-count" id="count-Nick">0</div>
+                        <div class="bar-layer layer-base" id="bar-base-Nick"></div>
+                        <div class="bar-layer layer-backfill" id="bar-backfill-Nick"></div>
+                        <div class="bar-layer layer-flame" id="bar-flame-Nick"></div>
+                    </div>
                     <div class="bar-label">Nick</div>
                 </div>
-                <div class="bar-wrapper">
+                <div class="bar-wrapper" id="wrap-Chris">
                     <div class="streak-badge" id="streak-Chris">🔥 0</div>
-                    <div class="bar-outer"><div class="bar-count" id="count-Chris">0</div><div class="bar-inner" id="bar-Chris"></div></div>
+                    <div class="bar-outer">
+                        <div class="bar-count" id="count-Chris">0</div>
+                        <div class="bar-layer layer-base" id="bar-base-Chris"></div>
+                        <div class="bar-layer layer-backfill" id="bar-backfill-Chris"></div>
+                        <div class="bar-layer layer-flame" id="bar-flame-Chris"></div>
+                    </div>
                     <div class="bar-label">Chris</div>
                 </div>
             </div>
@@ -122,14 +150,14 @@
         <div class="accordion" id="history-accordion">
             <div class="accordion-header" id="log-accordion-header" onclick="toggleAccordion('history-accordion')">Detailed Daily Log</div>
             <div class="accordion-content" id="log-content">
-                <div style="text-align:center; color:#555; padding: 10px;">Loading history sheets...</div>
+                <div style="text-align:center; color:#555; padding: 10px;">Loading history...</div>
             </div>
         </div>
 
         <div class="accordion" id="trends-accordion">
             <div class="accordion-header" onclick="toggleAccordion('trends-accordion')">Monthly Trends</div>
             <div class="accordion-content" id="trends-content">
-                <div style="text-align:center; padding:10px; color:#555;">Processing data summaries...</div>
+                <div style="text-align:center; padding:10px; color:#555;">Processing data...</div>
             </div>
         </div>
     </div>
@@ -167,7 +195,6 @@
     </div>
 
     <script>
-        // BACKEND SHEET LINK
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxxxrcbUtjxBVHJl_LaStWLn9fhnon0S79rewb1D1W_kMtQXbE7gjjWySoTtXVDmahO/exec"; 
 
         let currentCounter = 0;
@@ -185,13 +212,8 @@
         }
 
         function syncManualInput(val) {
-            if(val === "") {
-                currentCounter = 0;
-                document.getElementById('counter-val').innerText = currentCounter;
-                return;
-            }
-            currentCounter = parseInt(val) || 0;
-            document.getElementById('counter-val').innerText = currentCounter;
+            currentCounter = val === "" ? 0 : (parseInt(val) || 0);
+            updateCounterDisplay();
         }
 
         function updateCounterDisplay() {
@@ -206,16 +228,15 @@
         function updateDateDisplayLabels(dateObj) {
             const formatted = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
             const isToday = dateObj.toDateString() === new Date().toDateString();
-            
             document.getElementById('today-date').innerText = isToday ? `Today (${formatted}) 📅` : `${formatted} 📅`;
             document.getElementById('chart-card-title').innerText = isToday ? "Today's Performance" : `${formatted} Performance`;
             document.getElementById('log-accordion-header').innerText = isToday ? "Detailed Daily Log" : `Logs for ${formatted}`;
         }
 
         function changeViewDate(dateValue) {
-            if(!dateValue) return;
-            selectedViewISOStr = dateValue; 
-            const targetDate = new Date(dateValue + "T12:00:00"); 
+            if (!dateValue) return;
+            selectedViewISOStr = dateValue;
+            const targetDate = new Date(dateValue + "T12:00:00");
             updateDateDisplayLabels(targetDate);
             processAndRenderData();
         }
@@ -225,52 +246,53 @@
             const userHistoricalMap = { Anthony: {}, Nick: {}, Chris: {} };
             
             masterSheetData.forEach(item => {
-                if(!item.timestamp || !userHistoricalMap.hasOwnProperty(item.name)) return;
+                if (!item.timestamp || !userHistoricalMap[item.name]) return;
                 const dateKey = new Date(item.timestamp).toDateString();
                 userHistoricalMap[item.name][dateKey] = (userHistoricalMap[item.name][dateKey] || 0) + item.reps;
             });
 
             const checkDay = new Date();
             const todayStr = checkDay.toDateString();
-            
-            checkDay.setDate(checkDay.getDate() - 1);
-            const yesterdayStr = checkDay.toDateString();
 
             ['Anthony', 'Nick', 'Chris'].forEach(user => {
-                const logs = userHistoricalMap[user];
-                
-                // Enforced protection floor here as well so historical math won't break streaks
-                const todayTotal = Math.max(logs[todayStr] || 0, 0);
-                const yesterdayTotal = Math.max(logs[yesterdayStr] || 0, 0);
-                
-                const hitToday = todayTotal >= GOAL;
-                const hitYesterday = yesterdayTotal >= GOAL;
-                
-                if (!hitToday && !hitYesterday) {
-                    userStreaks[user] = 0;
-                    return;
-                }
-
+                const logs = userHistoricalMap[user] || {};
                 let streakCount = 0;
-                const cursor = new Date(); 
+                let cursor = new Date();
                 
-                while(true) {
+                while (true) {
                     const cursorStr = cursor.toDateString();
-                    const dayVolume = Math.max(logs[cursorStr] || 0, 0);
+                    const prevDay = new Date(cursor); 
+                    prevDay.setDate(prevDay.getDate() - 1);
+                    const prevDayStr = prevDay.toDateString();
                     
-                    if (dayVolume >= GOAL) {
-                        streakCount++;
-                    } else {
-                        if (cursorStr !== todayStr) {
-                            break; 
-                        }
+                    let trueToday = Math.max(logs[cursorStr] || 0, 0);
+                    let trueYesterday = Math.max(logs[prevDayStr] || 0, 0);
+
+                    if (trueYesterday < GOAL && trueToday > GOAL) {
+                        const rawSurplus = trueToday - GOAL;
+                        const availableLoanableReps = Math.floor(rawSurplus / 2);
+                        const neededReps = GOAL - trueYesterday;
+                        const loan = Math.min(availableLoanableReps, neededReps);
+                        trueYesterday += loan;
                     }
-                    cursor.setDate(cursor.getDate() - 1); 
+                    
+                    if (trueToday >= GOAL || (cursorStr === todayStr && trueYesterday >= GOAL)) {
+                        if (trueToday >= GOAL || (cursorStr === todayStr && Math.max(logs[cursorStr]||0,0) + trueYesterday >= GOAL)) {
+                            streakCount++;
+                        } else if (cursorStr === todayStr) {
+                        } else {
+                            break;
+                        }
+                    } else if (cursorStr !== todayStr) {
+                        break;
+                    }
+                    cursor.setDate(cursor.getDate() - 1);
+                    if (cursor.getFullYear() < 2025) break;
                 }
                 userStreaks[user] = streakCount;
             });
 
-            ['Anthony', 'Nick', 'Chris'].forEach(user => {
+            Object.keys(userStreaks).forEach(user => {
                 document.getElementById(`streak-${user}`).innerText = `🔥 ${userStreaks[user]}`;
             });
         }
@@ -278,140 +300,161 @@
         function processAndRenderData() {
             calculateStreaks();
 
-            let dailyData = { Anthony: 0, Nick: 0, Chris: 0 };
-            let filteredLogs = [];
+            const userDateMap = { Anthony: {}, Nick: {}, Chris: {} };
             let monthlyTotals = { Anthony: 0, Nick: 0, Chris: 0 };
-            
+            let rawChronologicalLogs = [];
+
             const currentViewObj = new Date(selectedViewISOStr + "T12:00:00");
-            const viewMonth = currentViewObj.getMonth();
-            const viewYear = currentViewObj.getFullYear();
-            const selectedDateStringCompare = currentViewObj.toDateString();
+            const isViewingToday = currentViewObj.toDateString() === new Date().toDateString();
+
+            const targetDateStr = currentViewObj.toDateString();
+            const tomorrowDateStr = new Date(currentViewObj.getTime() + 86400000).toDateString();
+            const yesterdayDateStr = new Date(currentViewObj.getTime() - 86400000).toDateString();
 
             masterSheetData.forEach(item => {
-                if(!item.timestamp) return;
+                if (!item.timestamp) return;
                 const entryDate = new Date(item.timestamp);
+                const dKey = entryDate.toDateString();
                 
-                if(entryDate.getMonth() === viewMonth && entryDate.getFullYear() === viewYear) {
-                    if(monthlyTotals.hasOwnProperty(item.name)) {
-                        monthlyTotals[item.name] += item.reps;
-                    }
+                if (userDateMap[item.name] !== undefined) {
+                    userDateMap[item.name][dKey] = (userDateMap[item.name][dKey] || 0) + item.reps;
                 }
 
-                if(entryDate.toDateString() === selectedDateStringCompare) {
-                    if(dailyData.hasOwnProperty(item.name)) {
-                        dailyData[item.name] += item.reps;
-                    }
+                if (entryDate.getMonth() === currentViewObj.getMonth() && entryDate.getFullYear() === currentViewObj.getFullYear()) {
+                    monthlyTotals[item.name] = (monthlyTotals[item.name] || 0) + item.reps;
+                }
+
+                if (dKey === targetDateStr) {
                     const timeString = entryDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                    filteredLogs.push({ name: item.name, reps: item.reps, time: timeString });
+                    rawChronologicalLogs.push({ name: item.name, reps: item.reps, time: timeString, ms: entryDate.getTime() });
                 }
             });
+
+            rawChronologicalLogs.sort((a, b) => b.ms - a.ms);
 
             ['Anthony', 'Nick', 'Chris'].forEach(user => {
-                // Safeguard: daily total display value will never fall below 0
-                const rawTotal = dailyData[user];
-                const cleanTotal = Math.max(rawTotal, 0);
-                
-                document.getElementById(`count-${user}`).innerText = cleanTotal;
-                const percentage = Math.min((cleanTotal / GOAL) * 100, 100);
-                document.getElementById(`bar-${user}`).style.height = `${Math.max(percentage, 0)}%`;
+                const logs = userDateMap[user] || {};
+                let rawTargetDay = Math.max(logs[targetDateStr] || 0, 0);
+                let rawTomorrow = Math.max(logs[tomorrowDateStr] || 0, 0);
+                let rawYesterday = Math.max(logs[yesterdayDateStr] || 0, 0);
+
+                let backfillReceived = 0;
+                let overflowFlame = 0;
+                let activeLoanOutCost = 0;
+
+                // Backfill logic - Blue only on non-today days
+                if (!isViewingToday && rawTargetDay < GOAL && rawTomorrow > GOAL) {
+                    const surplus = rawTomorrow - GOAL;
+                    const loanable = Math.floor(surplus / 2);
+                    backfillReceived = Math.min(loanable, GOAL - rawTargetDay);
+                }
+
+                // Outgoing loan calculation for flame
+                if (rawTargetDay > GOAL && rawYesterday < GOAL) {
+                    const surplus = rawTargetDay - GOAL;
+                    const loanable = Math.floor(surplus / 2);
+                    const needed = GOAL - rawYesterday;
+                    const delivered = Math.min(loanable, needed);
+                    activeLoanOutCost = delivered * 2;
+                }
+
+                if (rawTargetDay > GOAL) {
+                    overflowFlame = Math.max(rawTargetDay - GOAL - activeLoanOutCost, 0);
+                }
+
+                const finalCountValue = rawTargetDay > GOAL ? (GOAL + overflowFlame) : (rawTargetDay + backfillReceived);
+                const basePct = Math.min((Math.min(rawTargetDay, GOAL) / GOAL) * 100, 100);
+                const backfillPct = Math.min(((rawTargetDay + backfillReceived) / GOAL) * 100, 100);
+                const flamePct = Math.min((overflowFlame / GOAL) * 100, 100);
+
+                const baseEl = document.getElementById(`bar-base-${user}`);
+                const backfillEl = document.getElementById(`bar-backfill-${user}`);
+                const flameEl = document.getElementById(`bar-flame-${user}`);
+                const countEl = document.getElementById(`count-${user}`);
+
+                countEl.innerText = finalCountValue;
+                baseEl.style.height = `${basePct}%`;
+                flameEl.style.height = `${flamePct}%`;
+
+                if (backfillReceived > 0) {
+                    backfillEl.style.height = `${backfillPct}%`;
+                    backfillEl.style.clipPath = `inset(${100 - backfillPct}% 0% ${basePct}% 0%)`;
+                } else {
+                    backfillEl.style.height = '0%';
+                    backfillEl.style.clipPath = 'none';
+                }
             });
 
+            // Daily log
             const container = document.getElementById('log-content');
-            if (filteredLogs.length === 0) {
-                container.innerHTML = '<div style="text-align:center; color:#555; padding: 10px;">No records found for this date.</div>';
+            if (rawChronologicalLogs.length === 0) {
+                container.innerHTML = '<div style="text-align:center; color:#555; padding: 10px;">No records for this date.</div>';
             } else {
-                container.innerHTML = filteredLogs.map(log => `
+                container.innerHTML = rawChronologicalLogs.map(log => `
                     <div class="log-item">
                         <strong>${log.name}</strong>
-                        <span>${log.reps > 0 ? '+' : ''}${log.reps} reps <small style="color:#555;margin-left:5px;">${log.time}</small></span>
+                        <span>+${log.reps} <small style="color:#555">${log.time}</small></span>
                     </div>
                 `).join('');
             }
 
-            // Safeguard: monthly totals will also floor at 0
-            const cleanAnthonyMonth = Math.max(monthlyTotals.Anthony, 0);
-            const cleanNickMonth = Math.max(monthlyTotals.Nick, 0);
-            const cleanChrisMonth = Math.max(monthlyTotals.Chris, 0);
-
-            const anthonyPct = Math.min((cleanAnthonyMonth / MONTHLY_BENCHMARK) * 100, 100);
-            const nickPct = Math.min((cleanNickMonth / MONTHLY_BENCHMARK) * 100, 100);
-            const chrisPct = Math.min((cleanChrisMonth / MONTHLY_BENCHMARK) * 100, 100);
-
+            // Monthly trends
             const monthLabel = currentViewObj.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
             document.getElementById('trends-content').innerHTML = `
-                <div style="font-weight: 700; margin-bottom: 12px; color: #4cd964; border-bottom: 1px solid #262626; padding-bottom: 6px; font-size:12px;">${monthLabel.toUpperCase()} TOTAL VOLUME</div>
+                <div style="font-weight: 700; margin-bottom: 12px; color: #4cd964; border-bottom: 1px solid #262626; padding-bottom: 6px; font-size:12px;">${monthLabel.toUpperCase()} VOLUME</div>
                 <div style="display: flex; flex-direction: column; gap: 14px;">
-                    <div class="trend-row">
-                        <div class="trend-meta"><span>Anthony</span><strong>${cleanAnthonyMonth} reps</strong></div>
-                        <div class="trend-bar-outer"><div class="trend-bar-inner" style="width: ${anthonyPct}%"></div></div>
-                    </div>
-                    <div class="trend-row">
-                        <div class="trend-meta"><span>Nick</span><strong>${cleanNickMonth} reps</strong></div>
-                        <div class="trend-bar-outer"><div class="trend-bar-inner" style="width: ${nickPct}%"></div></div>
-                    </div>
-                    <div class="trend-row">
-                        <div class="trend-meta"><span>Chris</span><strong>${cleanChrisMonth} reps</strong></div>
-                        <div class="trend-bar-outer"><div class="trend-bar-inner" style="width: ${chrisPct}%"></div></div>
-                    </div>
+                    ${['Anthony','Nick','Chris'].map(user => {
+                        const total = Math.max(monthlyTotals[user] || 0, 0);
+                        const pct = Math.min((total / MONTHLY_BENCHMARK) * 100, 100);
+                        return `<div class="trend-row"><div class="trend-meta"><span>${user}</span><strong>${total}</strong></div><div class="trend-bar-outer"><div class="trend-bar-inner" style="width: ${pct}%"></div></div></div>`;
+                    }).join('')}
                 </div>
             `;
         }
 
         function fetchDataFromSheet() {
             document.getElementById('load-status').innerText = "Syncing...";
-            
             fetch(GOOGLE_SCRIPT_URL)
-                .then(response => response.json())
+                .then(r => r.json())
                 .then(data => {
                     masterSheetData = Array.isArray(data) ? data : [];
                     processAndRenderData();
                     document.getElementById('load-status').innerText = "Online";
                 })
-                .catch(err => {
-                    console.error("Backend spreadsheet sync issue:", err);
-                    document.getElementById('load-status').innerText = "Offline Mode";
-                });
+                .catch(() => document.getElementById('load-status').innerText = "Offline");
         }
 
         function submitLog() {
-            const selectedUser = document.getElementById('user-select').value;
-            const repsToLog = currentCounter;
+            const user = document.getElementById('user-select').value;
+            const reps = currentCounter;
+            if (reps === 0) return;
 
-            if (repsToLog === 0) return;
-
-            const targetTimestamp = new Date(selectedViewISOStr + "T12:00:00");
-
-            masterSheetData.unshift({
-                name: selectedUser,
-                reps: repsToLog,
-                timestamp: targetTimestamp.toISOString()
-            });
+            const timestamp = new Date().toISOString();
+            masterSheetData.unshift({ name: user, reps, timestamp });
 
             processAndRenderData();
-            
             currentCounter = 0;
             updateCounterDisplay();
 
             const btn = document.getElementById('submit-btn');
             btn.disabled = true;
             document.getElementById('load-status').innerText = "Saving...";
-            
+
             fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
                 mode: 'no-cors',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: selectedUser, reps: repsToLog, timestamp: targetTimestamp.toISOString() })
+                body: JSON.stringify({ name: user, reps, timestamp })
             }).then(() => {
-                btn.disabled = false;
-                document.getElementById('load-status').innerText = "Online";
-                setTimeout(fetchDataFromSheet, 1200);
-            }).catch(err => {
-                console.error("Sheet sync error: ", err);
+                setTimeout(() => { btn.disabled = false; fetchDataFromSheet(); }, 800);
+            }).catch(() => {
                 btn.disabled = false;
                 document.getElementById('load-status').innerText = "Sync Error";
             });
         }
 
+        // Initialize
+        toggleAccordion('history-accordion');
         fetchDataFromSheet();
     </script>
 </body>
