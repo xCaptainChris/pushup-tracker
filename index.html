@@ -3,9 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="theme-color" content="#121212">
     <title>REP MATRIX</title>
     
+    <link rel="icon" type="image/svg+xml" href="icon-light.svg" media="(prefers-color-scheme: light)">
+    <link rel="icon" type="image/svg+xml" href="icon-dark.svg" media="(prefers-color-scheme: dark)">
     <link rel="apple-touch-icon" href="icon-dark.png">
+    
+    <link rel="manifest" href="data:application/manifest+json,{
+        &quot;name&quot;:&quot;REP MATRIX&quot;,
+        &quot;short_name&quot;:&quot;RepMatrix&quot;,
+        &quot;start_url&quot;:&quot;.&quot;,
+        &quot;display&quot;:&quot;standalone&quot;,
+        &quot;background_color&quot;:&quot;#121212&quot;,
+        &quot;theme_color&quot;:&quot;#121212&quot;,
+        &quot;icons&quot;:[{
+            &quot;src&quot;:&quot;icon-dark.png&quot;,
+            &quot;sizes&quot;:&quot;192x192&quot;,
+            &quot;type&quot;:&quot;image/png&quot;
+        },{
+            &quot;src&quot;:&quot;icon-dark.png&quot;,
+            &quot;sizes&quot;:&quot;512x512&quot;,
+            &quot;type&quot;:&quot;image/png&quot;
+        }]
+    }">
 
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
@@ -14,9 +37,10 @@
         .header { display: flex; flex-direction: column; align-items: center; margin-bottom: 12px; gap: 6px; }
         .header h1 { font-size: 24px; font-weight: 900; letter-spacing: 2px; color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
         
-        .date-badge-wrapper { position: relative; display: inline-block; min-width: 160px; text-align: center; }
+        .date-nav { display: flex; align-items: center; gap: 12px; }
         .date-badge { background: #1a1a1a; padding: 6px 16px; border-radius: 20px; font-size: 13px; color: #4cd964; border: 1px solid #262626; font-weight: 800; cursor: pointer; letter-spacing: 0.5px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
-        .hidden-date-picker { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+        .nav-arrow { background: none; border: none; color: #4cd964; font-size: 28px; font-weight: bold; cursor: pointer; padding: 0 10px; line-height: 1; }
+        .nav-arrow:active { color: #fff; }
 
         .main-content { flex: 1; overflow-y: scroll; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; gap: 12px; padding-bottom: 10px; }
         
@@ -91,10 +115,12 @@
 
     <div class="header">
         <h1>REP MATRIX</h1>
-        <div class="date-badge-wrapper">
-            <div class="date-badge" id="today-date">Today</div>
-            <input type="date" id="main-view-date-picker" class="hidden-date-picker" onchange="changeViewDate(this.value)">
+        <div class="date-nav">
+            <button class="nav-arrow" onclick="prevDay()">←</button>
+            <div class="date-badge" id="today-date" onclick="document.getElementById('main-view-date-picker').click()">Today</div>
+            <button class="nav-arrow" onclick="nextDay()">→</button>
         </div>
+        <input type="date" id="main-view-date-picker" class="hidden-date-picker" onchange="changeViewDate(this.value)" style="display: none;">
     </div>
 
     <div class="main-content">
@@ -241,6 +267,24 @@
             processAndRenderData();
         }
 
+        function prevDay() {
+            const current = new Date(selectedViewISOStr);
+            current.setDate(current.getDate() - 1);
+            selectedViewISOStr = current.toLocaleDateString('en-CA');
+            document.getElementById('main-view-date-picker').value = selectedViewISOStr;
+            updateDateDisplayLabels(current);
+            processAndRenderData();
+        }
+
+        function nextDay() {
+            const current = new Date(selectedViewISOStr);
+            current.setDate(current.getDate() + 1);
+            selectedViewISOStr = current.toLocaleDateString('en-CA');
+            document.getElementById('main-view-date-picker').value = selectedViewISOStr;
+            updateDateDisplayLabels(current);
+            processAndRenderData();
+        }
+
         function calculateStreaks() {
             const userStreaks = { Anthony: 0, Nick: 0, Chris: 0 };
             const userHistoricalMap = { Anthony: {}, Nick: {}, Chris: {} };
@@ -342,14 +386,12 @@
                 let overflowFlame = 0;
                 let activeLoanOutCost = 0;
 
-                // Backfill logic - Blue only on non-today days
                 if (!isViewingToday && rawTargetDay < GOAL && rawTomorrow > GOAL) {
                     const surplus = rawTomorrow - GOAL;
                     const loanable = Math.floor(surplus / 2);
                     backfillReceived = Math.min(loanable, GOAL - rawTargetDay);
                 }
 
-                // Outgoing loan calculation for flame
                 if (rawTargetDay > GOAL && rawYesterday < GOAL) {
                     const surplus = rawTargetDay - GOAL;
                     const loanable = Math.floor(surplus / 2);
@@ -385,7 +427,6 @@
                 }
             });
 
-            // Daily log
             const container = document.getElementById('log-content');
             if (rawChronologicalLogs.length === 0) {
                 container.innerHTML = '<div style="text-align:center; color:#555; padding: 10px;">No records for this date.</div>';
@@ -398,7 +439,6 @@
                 `).join('');
             }
 
-            // Monthly trends
             const monthLabel = currentViewObj.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
             document.getElementById('trends-content').innerHTML = `
                 <div style="font-weight: 700; margin-bottom: 12px; color: #4cd964; border-bottom: 1px solid #262626; padding-bottom: 6px; font-size:12px;">${monthLabel.toUpperCase()} VOLUME</div>
