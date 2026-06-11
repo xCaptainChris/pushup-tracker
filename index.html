@@ -1,11 +1,3 @@
-Got it. This is the exact code baseline we need. Looking directly at it, the issues make total sense:
- 1. **The Scrolling Freeze:** In your CSS under body, it says overflow: hidden;. Then, under .main-content, it says overflow-y: auto;. On mobile browsers (especially Safari/iOS when saved as a standalone web app), having overflow: hidden on the body wrapper while trying to handle scrolling within an inner child box frequently locks up touch gestures entirely. We can fix this by unlocking the root viewport layout.
- 2. **The "Monthly Accumulations" Bloat:** It is renamed to a clean **Monthly Trends** overview.
- 3. **The Symmetrical Grid Layout:** The left column is updated from that single stretched -5 box to a stacked button column featuring -10 and -5 to perfectly mirror the right-side layout.
- 4. **Branding:** "Brotherhood Iron" has been dropped. We will swap it to a minimalist, high-end tracking title: **REP MATRIX**, and update the execution button to a clean **PUSH!**.
- 5. **App Icon Customization:** Added a dynamic SVG template trick directly into your header so that when you pin it to your phone's home screen, it pulls a clean, matching minimalist icon instead of a generic text letter fallback.
-Here is your updated, working version with the visual tuning and layout balancing complete:
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -397,5 +389,3 @@ Here is your updated, working version with the visual tuning and layout balancin
     </script>
 </body>
 </html>
-
-```
