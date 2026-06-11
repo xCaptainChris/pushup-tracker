@@ -37,10 +37,25 @@
         .header { display: flex; flex-direction: column; align-items: center; margin-bottom: 12px; gap: 6px; }
         .header h1 { font-size: 24px; font-weight: 900; letter-spacing: 2px; color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
         
-        .date-nav { display: flex; align-items: center; gap: 12px; }
+        .date-nav { display: flex; align-items: center; gap: 6px; }
         .date-badge { background: #1a1a1a; padding: 6px 16px; border-radius: 20px; font-size: 13px; color: #4cd964; border: 1px solid #262626; font-weight: 800; cursor: pointer; letter-spacing: 0.5px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
-        .nav-arrow { background: none; border: none; color: #4cd964; font-size: 28px; font-weight: bold; cursor: pointer; padding: 0 10px; line-height: 1; }
-        .nav-arrow:active { color: #fff; }
+        
+        .nav-arrow { 
+            background: #222; 
+            border: 1px solid #444; 
+            color: #4cd964; 
+            font-size: 26px; 
+            font-weight: 900; 
+            cursor: pointer; 
+            padding: 6px 12px; 
+            border-radius: 10px; 
+            line-height: 1;
+            transition: all 0.2s;
+        }
+        .nav-arrow:active { 
+            background: #333; 
+            transform: scale(0.95); 
+        }
 
         .main-content { flex: 1; overflow-y: scroll; -webkit-overflow-scrolling: touch; display: flex; flex-direction: column; gap: 12px; padding-bottom: 10px; }
         
@@ -72,17 +87,24 @@
         .bar-label { margin-top: 8px; font-size: 13px; color: #eee; font-weight: 700; text-align: center; }
         .bar-count { font-size: 11px; margin-bottom: 2px; position: absolute; width: 100%; text-align: center; bottom: 4px; font-weight: 900; color: #000; z-index: 10; }
 
-        .playground-legend { display: flex; justify-content: center; gap: 12px; font-size: 10px; font-weight: 700; margin-top: -4px; margin-bottom: 4px; }
+        .playground-legend { display: flex; justify-content: center; gap: 16px; font-size: 10px; font-weight: 700; margin: 4px 0 8px 0; }
         .legend-item { display: flex; align-items: center; gap: 4px; }
-        .dot { width: 8px; height: 8px; border-radius: 50%; }
 
         .accordion { background: #1a1a1a; border-radius: 12px; border: 1px solid #262626; overflow: hidden; }
         .accordion-header { padding: 15px; display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 14px; color: #ddd; cursor: pointer; }
         .accordion-header::after { content: '▼'; font-size: 9px; color: #666; transition: transform 0.2s; }
         .accordion.open .accordion-header::after { transform: rotate(180deg); }
         
-        .accordion-content { display: none; padding: 0 15px 15px 15px; overflow: hidden; font-size: 13px; color: #aaa; }
+        .accordion-content { 
+            display: none; 
+            padding: 0 15px 15px 15px; 
+            max-height: 320px; 
+            overflow-y: auto; 
+            font-size: 13px; 
+            color: #aaa; 
+        }
         .accordion.open .accordion-content { display: block; }
+
         .log-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #262626; font-size: 13px; }
 
         .trend-row { display: flex; flex-direction: column; gap: 4px; margin-top: 12px; }
@@ -116,9 +138,9 @@
     <div class="header">
         <h1>REP MATRIX</h1>
         <div class="date-nav">
-            <button class="nav-arrow" onclick="prevDay()">←</button>
+            <button class="nav-arrow" onclick="prevDay()">‹‹</button>
             <div class="date-badge" id="today-date" onclick="document.getElementById('main-view-date-picker').click()">Today</div>
-            <button class="nav-arrow" onclick="nextDay()">→</button>
+            <button class="nav-arrow" onclick="nextDay()">››</button>
         </div>
         <input type="date" id="main-view-date-picker" class="hidden-date-picker" onchange="changeViewDate(this.value)" style="display: none;">
     </div>
@@ -126,7 +148,7 @@
     <div class="main-content">
         <div class="card">
             <div class="card-header-row">
-                <div class="card-title" id="chart-card-title">Day Totals</div>
+                <div class="card-title">GAINS</div>
                 <div class="status-container">
                     <div class="loading-status" id="load-status">Syncing...</div>
                     <button class="refresh-btn" onclick="fetchDataFromSheet()" title="Force Refresh">🔄</button>
@@ -136,7 +158,7 @@
             <div class="playground-legend">
                 <div class="legend-item"><div class="dot" style="background:#4cd964;"></div> Normal</div>
                 <div class="legend-item"><div class="dot" style="background:#007aff;"></div> Backfilled</div>
-                <div class="legend-item"><div class="dot" style="background:#ff9500;"></div> Overflow</div>
+                <div class="legend-item"><div class="dot" style="background:#ff9500;"></div> Fire</div>
             </div>
             
             <div class="chart-container">
@@ -229,9 +251,6 @@
         const GOAL = 100;
         const MONTHLY_BENCHMARK = 3000; 
 
-        document.getElementById('main-view-date-picker').value = selectedViewISOStr;
-        updateDateDisplayLabels(new Date());
-
         function adjustCounter(amount) {
             currentCounter += amount;
             updateCounterDisplay();
@@ -255,7 +274,6 @@
             const formatted = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
             const isToday = dateObj.toDateString() === new Date().toDateString();
             document.getElementById('today-date').innerText = isToday ? `Today (${formatted}) 📅` : `${formatted} 📅`;
-            document.getElementById('chart-card-title').innerText = isToday ? "Today's Performance" : `${formatted} Performance`;
             document.getElementById('log-accordion-header').innerText = isToday ? "Detailed Daily Log" : `Logs for ${formatted}`;
         }
 
@@ -337,7 +355,8 @@
             });
 
             Object.keys(userStreaks).forEach(user => {
-                document.getElementById(`streak-${user}`).innerText = `🔥 ${userStreaks[user]}`;
+                const el = document.getElementById(`streak-${user}`);
+                if (el) el.innerText = `🔥 ${userStreaks[user]}`;
             });
         }
 
@@ -409,21 +428,23 @@
                 const backfillPct = Math.min(((rawTargetDay + backfillReceived) / GOAL) * 100, 100);
                 const flamePct = Math.min((overflowFlame / GOAL) * 100, 100);
 
+                const countEl = document.getElementById(`count-${user}`);
                 const baseEl = document.getElementById(`bar-base-${user}`);
                 const backfillEl = document.getElementById(`bar-backfill-${user}`);
                 const flameEl = document.getElementById(`bar-flame-${user}`);
-                const countEl = document.getElementById(`count-${user}`);
 
-                countEl.innerText = finalCountValue;
-                baseEl.style.height = `${basePct}%`;
-                flameEl.style.height = `${flamePct}%`;
+                if (countEl) countEl.innerText = finalCountValue;
+                if (baseEl) baseEl.style.height = `${basePct}%`;
+                if (flameEl) flameEl.style.height = `${flamePct}%`;
 
-                if (backfillReceived > 0) {
-                    backfillEl.style.height = `${backfillPct}%`;
-                    backfillEl.style.clipPath = `inset(${100 - backfillPct}% 0% ${basePct}% 0%)`;
-                } else {
-                    backfillEl.style.height = '0%';
-                    backfillEl.style.clipPath = 'none';
+                if (backfillEl) {
+                    if (backfillReceived > 0) {
+                        backfillEl.style.height = `${backfillPct}%`;
+                        backfillEl.style.clipPath = `inset(${100 - backfillPct}% 0% ${basePct}% 0%)`;
+                    } else {
+                        backfillEl.style.height = '0%';
+                        backfillEl.style.clipPath = 'none';
+                    }
                 }
             });
 
@@ -494,7 +515,6 @@
         }
 
         // Initialize
-        toggleAccordion('history-accordion');
         fetchDataFromSheet();
     </script>
 </body>
