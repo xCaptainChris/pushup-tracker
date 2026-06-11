@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+<meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>REP MATRIX</title>
     
-    <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAYAAABS3GwHAAAACXBIWXMAAAsTAAALEwEAmpwYAAADXklEQVR4nO3bS2tTURTG8b9Jm7Rpk5pW0YpS0Yog6gN04Adw4Adw6AfoRxAnwYHgwIkgToIDp4KDIPrgV/AB+gB9gEId9K0WhSpt0uS2Seoizksu3gYid89asvdf6FmEwN7rs89aa+9zYgYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwN9m0A0Yp67rp9u2XWrbtuF7G67rerp93+S+mX0ze2b2zexbNisv586dvdW2bXf9Y7p9X6Xra9v22bbt9fWf7bperuv66u8p/u5Zf6f/W76u66v5p67ra9u226ZpmvV16Lq+vuvv/bF9N7NvZt/Mvpl9y2bZg8w8n808S8x69vA0YfXN7FvN9838WzbLHmTm+WzmWWLWu8ekCZM3s2813zfzb9kse5CZ57OZZ4lZ7x6/JkzezL7VfN/Mv2Wz7EFmno9vHiFm/fD4NWHyZvat5vtm/i2bZQ8y8/S8wX9EzPrwPGLyZvat5vtm/i2bZQ8y8/S8q68as949X02YvJl9q/m+mX/LZtmDzDw9bxZfjVnvnr+mTJ68mX2r+b6Zf8tm2YPMPEvMevbYNGH1zexbzffN/Fs2yx4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwN9l0A0Yp67rp9u2XWrbtuF7G67rerp93+S+mX0ze2b2zexbNisv586dvdW2bXf9Y7p9X6Xra9v22bbt9fWf7bperuv66u8p/u5Zf6f/W76u66v5p67ra9u226ZpmvV16Lq+vuvv/bF9N7NvZt/Mvpl9y2bZg8w8n808S8x69vA0YfXN7FvN9838WzbLHmTm+WzmWWLWu8ekCZM3s2813zfzb9kse5CZ57OZZ4lZ7x6/JkzezL7VfN/Mv2Wz7EFmno9vHiFm/fD4NWHyZvat5vtm/i2bZQ8y8/S8wX9EzPrwPGLyZvat5vtm/i2bZQ8y8/S8q68as949X02YvJl9q/m+mX/LZtmDzDw9bxZfjVnvnr+mTJ68mX2r+b6Zf8tm2YPMPEvMevbYNGH1zexbzffN/Fs2yx4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwN96AE7gN90v7F6bAAAAAElFTkSuQmCC">
-    <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAYAAABS3GwHAAAACXBIWXMAAAsTAAALEwEAmpwYAAADXklEQVR4nO3bS2tTURTG8b9Jm7Rpk5pW0YpS0Yog6gN04Adw4Adw6AfoRxAnwYHgwIkgToIDp4KDIPrgV/AB+gB9gEId9K0WhSpt0uS2Seoizksu3gYid89asvdf6FmEwN7rs89aa+9zYgYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwN9m0A0Yp67rp9u2XWrbtuF7G67rerp93+S+mX0ze2b2zexbNisv586dvdW2bXf9Y7p9X6Xra9v22bbt9fWf7bperuv66u8p/u5Zf6f/W76u66v5p67ra9u226ZpmvV16Lq+vuvv/bF9N7NvZt/Mvpl9y2bZg8w8n808S8x69vA0YfXN7FvN9838WzbLHmTm+WzmWWLWu8ekCZM3s2813zfzb9kse5CZ57OZZ4lZ7x6/JkzezL7VfN/Mv2Wz7EFmno9vHiFm/fD4NWHyZvat5vtm/i2bZQ8y8/S8wX9EzPrwPGLyZvat5vtm/i2bZQ8y8/S8q68as949X02YvJl9q/m+mX/LZtmDzDw9bxZfjVnvnr+mTJ68mX2r+b6Zf8tm2YPMPEvMevbYNGH1zexbzffN/Fs2yx4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwN9l0A0Yp67rp9u2XWrbtuF7G67rerp93+S+mX0ze2b2zexbNisv586dvdW2bXf9Y7p9X6Xra9v22bbt9fWf7bperuv66u8p/u5Zf6f/W76u66v5p67ra9u226ZpmvV16Lq+vuvv/bF9N7NvZt/Mvpl9y2bZg8w8n808S8x69vA0YfXN7FvN9838WzbLHmTm+WzmWWLWu8ekCZM3s2813zfzb9kse5CZ57OZZ4lZ7x6/JkzezL7VfN/Mv2Wz7EFmno9vHiFm/fD4NWHyZvat5vtm/i2bZQ8y8/S8wX9EzPrwPGLyZvat5vtm/i2bZQ8y8/S8q68as949X02YvJl9q/m+mX/LZtmDzDw9bxZfjVnvnr+mTJ68mX2r+b6Zf8tm2YPMPEvMevbYNGH1zexbzffN/Fs2yx4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwN96AE7gN90v7F6bAAAAAElFTkSuQmCC">
+    <link rel="icon" type="image/svg+xml" href="icon-light.svg" media="(prefers-color-scheme: light)">
+    <link rel="apple-touch-icon" href="icon-light.svg" media="(prefers-color-scheme: light)">
+
+    <link rel="icon" type="image/svg+xml" href="icon-dark.svg" media="(prefers-color-scheme: dark)">
+    <link rel="apple-touch-icon" href="icon-dark.svg" media="(prefers-color-scheme: dark)">
     
     <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22Pushup%20Tracker%22,%22short_name%22:%22Pushups%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22#121212%22,%22theme_color%22:%22#121212%22}">
     <style>
