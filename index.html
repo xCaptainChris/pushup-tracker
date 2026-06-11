@@ -157,16 +157,16 @@
     </div>
 
     <script>
+        // BACKEND SHEET LINK
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxxxrcbUtjxBVHJl_LaStWLn9fhnon0S79rewb1D1W_kMtQXbE7gjjWySoTtXVDmahO/exec"; 
 
         let currentCounter = 0;
         let masterSheetData = []; 
-        let selectedViewDateStr = new Date().toDateString(); 
+        let selectedViewISOStr = new Date().toLocaleDateString('en-CA'); // FIX: Track globally using raw standard format "YYYY-MM-DD"
         const GOAL = 100;
 
         // Initialize Native Calendar Inputs
-        const localISOString = new Date().toLocaleDateString('en-CA'); 
-        document.getElementById('main-view-date-picker').value = localISOString;
+        document.getElementById('main-view-date-picker').value = selectedViewISOStr;
         updateDateDisplayLabels(new Date());
 
         function adjustCounter(amount) {
@@ -200,18 +200,17 @@
 
         function changeViewDate(dateValue) {
             if(!dateValue) return;
+            selectedViewISOStr = dateValue; // Keeps the strict format intact
             const targetDate = new Date(dateValue + "T12:00:00"); 
-            selectedViewDateStr = targetDate.toDateString();
             updateDateDisplayLabels(targetDate);
             processAndRenderData();
         }
 
-        // DYNAMIC STREAK CALCULATION ENGINE
+        // STREAK ENGINE
         function calculateStreaks() {
             const userStreaks = { Anthony: 0, Nick: 0, Chris: 0 };
             const userHistoricalMap = { Anthony: {}, Nick: {}, Chris: {} };
             
-            // Step 1: Map out all historical volume totals aggregated by distinct date strings
             masterSheetData.forEach(item => {
                 if(!item.timestamp || !userHistoricalMap.hasOwnProperty(item.name)) return;
                 const dateKey = new Date(item.timestamp).toDateString();
@@ -221,14 +220,11 @@
             const checkDay = new Date();
             const todayStr = checkDay.toDateString();
             
-            // Check yesterday to see if a streak is active
             checkDay.setDate(checkDay.getDate() - 1);
             const yesterdayStr = checkDay.toDateString();
 
             ['Anthony', 'Nick', 'Chris'].forEach(user => {
                 const logs = userHistoricalMap[user];
-                
-                // If they haven't hit goal today AND didn't hit goal yesterday, streak is currently 0
                 const hitToday = (logs[todayStr] || 0) >= GOAL;
                 const hitYesterday = (logs[yesterdayStr] || 0) >= GOAL;
                 
@@ -237,9 +233,8 @@
                     return;
                 }
 
-                // Crawl backward through history calculation loops until the chain breaks
                 let streakCount = 0;
-                const cursor = new Date(); // Start from today
+                const cursor = new Date(); 
                 
                 while(true) {
                     const cursorStr = cursor.toDateString();
@@ -248,47 +243,43 @@
                     if (dayVolume >= GOAL) {
                         streakCount++;
                     } else {
-                        // If checking today and they haven't finished yet, don't break the streak loop chain
                         if (cursorStr !== todayStr) {
                             break; 
                         }
                     }
-                    cursor.setDate(cursor.getDate() - 1); // Step one back day
+                    cursor.setDate(cursor.getDate() - 1); 
                 }
                 userStreaks[user] = streakCount;
             });
 
-            // Update DOM streak layout badges
             ['Anthony', 'Nick', 'Chris'].forEach(user => {
                 document.getElementById(`streak-${user}`).innerText = `🔥 ${userStreaks[user]}`;
             });
         }
 
         function processAndRenderData() {
-            // First run global calculations engine
             calculateStreaks();
 
             let dailyData = { Anthony: 0, Nick: 0, Chris: 0 };
             let filteredLogs = [];
             let monthlyTotals = { Anthony: 0, Nick: 0, Chris: 0 };
             
-            const currentViewObj = new Date(selectedViewDateStr);
+            const currentViewObj = new Date(selectedViewISOStr + "T12:00:00");
             const viewMonth = currentViewObj.getMonth();
             const viewYear = currentViewObj.getFullYear();
+            const selectedDateStringCompare = currentViewObj.toDateString();
 
             masterSheetData.forEach(item => {
                 if(!item.timestamp) return;
                 const entryDate = new Date(item.timestamp);
                 
-                // Aggregations matching month view calculations
                 if(entryDate.getMonth() === viewMonth && entryDate.getFullYear() === viewYear) {
                     if(monthlyTotals.hasOwnProperty(item.name)) {
                         monthlyTotals[item.name] += item.reps;
                     }
                 }
 
-                // Filter rows matching timeline viewing state
-                if(entryDate.toDateString() === selectedViewDateStr) {
+                if(entryDate.toDateString() === selectedDateStringCompare) {
                     if(dailyData.hasOwnProperty(item.name)) {
                         dailyData[item.name] += item.reps;
                     }
@@ -297,7 +288,6 @@
                 }
             });
 
-            // Update Graphics
             ['Anthony', 'Nick', 'Chris'].forEach(user => {
                 const total = dailyData[user];
                 document.getElementById(`count-${user}`).innerText = total;
@@ -305,7 +295,6 @@
                 document.getElementById(`bar-${user}`).style.height = `${Math.max(percentage, 0)}%`;
             });
 
-            // Rebuild History Logs Container
             const container = document.getElementById('log-content');
             if (filteredLogs.length === 0) {
                 container.innerHTML = '<div style="text-align:center; color:#555; padding: 10px;">No records found for this date.</div>';
@@ -318,7 +307,6 @@
                 `).join('');
             }
 
-            // Build Monthly Trends Summary panel
             const monthLabel = currentViewObj.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
             document.getElementById('trends-content').innerHTML = `
                 <div style="font-weight: 700; margin-bottom: 8px; color: #4cd964; border-bottom: 1px solid #262626; padding-bottom: 6px; font-size:12px;">${monthLabel.toUpperCase()} TOTAL VOLUME</div>
@@ -341,7 +329,7 @@
                     document.getElementById('load-status').innerText = "Online";
                 })
                 .catch(err => {
-                    console.error("Error reading backend spreadsheet logs:", err);
+                    console.error("Backend spreadsheet sync issue:", err);
                     document.getElementById('load-status').innerText = "Offline Mode";
                 });
         }
@@ -352,10 +340,9 @@
 
             if (repsToLog === 0) return;
 
-            // Direct target logs explicitly bind directly to current timeline viewpoint context
-            const targetTimestamp = new Date(selectedViewDateStr + "T12:00:00");
+            // FIX: Formats safely into absolute valid ISO parameters matching indexv0.5 pattern
+            const targetTimestamp = new Date(selectedViewISOStr + "T12:00:00");
 
-            // Optimistic UI Append
             masterSheetData.unshift({
                 name: selectedUser,
                 reps: repsToLog,
