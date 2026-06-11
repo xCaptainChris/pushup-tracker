@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Global Progress Tracker</title>
-    <!-- Web App Manifest to allow "Add to Home Screen" -->
     <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22Pushup%20Tracker%22,%22short_name%22:%22Pushups%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22#121212%22,%22theme_color%22:%22#121212%22}">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; user-select: none; }
@@ -66,7 +65,6 @@
     </div>
 
     <div class="main-content">
-        <!-- Dashboard Chart Card -->
         <div class="card">
             <div class="card-title">Today's Totals</div>
             <div class="chart-container">
@@ -85,7 +83,6 @@
             </div>
         </div>
 
-        <!-- Detailed History Accordion -->
         <div class="accordion" id="history-accordion">
             <div class="accordion-header" onclick="toggleAccordion('history-accordion')">Detailed Daily Log</div>
             <div class="accordion-content" id="log-content">
@@ -93,7 +90,6 @@
             </div>
         </div>
 
-        <!-- Monthly Trends Accordion Placeholder -->
         <div class="accordion" id="trends-accordion">
             <div class="accordion-header" onclick="toggleAccordion('trends-accordion')">Monthly Trends</div>
             <div class="accordion-content">
@@ -102,7 +98,6 @@
         </div>
     </div>
 
-    <!-- Fixed Bottom Input Panel -->
     <div class="input-panel">
         <div class="input-header">
             <div class="input-title">Add Pushups</div>
@@ -114,17 +109,14 @@
         </div>
 
         <div class="counter-grid">
-            <!-- Minus 5 Button -->
             <div class="btn btn-neg" onclick="adjustCounter(-5)">-5<span>-5 REPS</span></div>
             
-            <!-- Central Display -->
             <div class="counter-display">
                 <div class="counter-number" id="counter-val">0</div>
                 <div class="counter-unit">REPS</div>
                 <input type="number" id="manual-input" class="manual-input-box" placeholder="Or type exact..." oninput="syncManualInput(this.value)">
             </div>
             
-            <!-- Plus Stack Buttons -->
             <div class="btn-col">
                 <div class="btn" onclick="adjustCounter(1)">+1<span>REPS</span></div>
                 <div class="btn" onclick="adjustCounter(5)">+5<span>REPS</span></div>
@@ -137,9 +129,8 @@
 
     <script>
         // --- CONFIGURATION ---
-        // Change this string to your deployment webhook or form handler script when ready.
-        // For absolute simplest Google Sheet direct submitting without backend code, we use a basic form submission pattern.
-        const GOOGLE_SCRIPT_URL = "YOUR_GOOGLE_SHEET_URL_HERE"; 
+        // Updated to your custom Google Apps Script link
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxxxrcbUtjxBVHJl_LaStWLn9fhnon0S79rewb1D1W_kMtQXbE7gjjWySoTtXVDmahO/exec"; 
 
         // Local state management to keep everything fast and instantaneous
         let currentCounter = 0;
@@ -214,7 +205,8 @@
             updateCounterDisplay();
 
             // 2. Network/Google Sheets syncing in the background
-            if(GOOGLE_SCRIPT_URL !== "https://docs.google.com/spreadsheets/d/1RZPtzsnSY9fJwpatNfNeC6_k76mGKy43dNIEWvwycfA/edit?gid=0#gid=0") {
+            // FIXED: Changed logic to check that a valid URL is present before trying to fire the sync fetch
+            if(GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== "YOUR_GOOGLE_SHEET_URL_HERE") {
                 const btn = document.getElementById('submit-btn');
                 btn.disabled = true;
                 
