@@ -3,81 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Global Progress Tracker</title>
+    <title>Brotherhood Iron Tracker</title>
     <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22Pushup%20Tracker%22,%22short_name%22:%22Pushups%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22#121212%22,%22theme_color%22:%22#121212%22}">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-        /* Prevent selection highlighting but allow scrolling gestures on touch devices */
         body { background-color: #121212; color: #ffffff; padding: 15px; display: flex; flex-direction: column; height: 100vh; overflow: hidden; -webkit-user-select: none; user-select: none; }
         
-        /* Layout Structure */
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .header h1 { font-size: 22px; font-weight: 800; letter-spacing: 0.5px; }
+        /* Premium Header Styling */
+        .header { display: flex; flex-direction: column; align-items: center; margin-bottom: 12px; gap: 6px; }
+        .header h1 { font-size: 24px; font-weight: 900; letter-spacing: 1.5px; color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
         
-        /* Interactive Date Badge Overlay Engine */
-        .date-badge-wrapper { position: relative; display: inline-block; }
-        .date-badge { background: #222; padding: 6px 12px; border-radius: 6px; font-size: 14px; color: #aaa; border: 1px solid #333; font-weight: bold; cursor: pointer; }
+        /* Centered Context Date Picker Badge */
+        .date-badge-wrapper { position: relative; display: inline-block; min-width: 160px; text-align: center; }
+        .date-badge { background: #1a1a1a; padding: 6px 16px; border-radius: 20px; font-size: 13px; color: #4cd964; border: 1px solid #262626; font-weight: 800; cursor: pointer; letter-spacing: 0.5px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
         .hidden-date-picker { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
 
         .main-content { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-bottom: 10px; -webkit-overflow-scrolling: touch; }
         
-        /* Today's Totals Card */
+        /* Main Card Layout */
         .card { background: #1a1a1a; border-radius: 12px; padding: 15px; border: 1px solid #262626; position: relative; }
-        .card-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .card-title { font-size: 16px; font-weight: 700; color: #eee; }
+        .card-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .card-title { font-size: 15px; font-weight: 700; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px; }
         
-        /* Sync Status Bar Container */
-        .status-container { display: flex; align-items: center; gap: 8px; background: #222; padding: 4px 8px; border-radius: 20px; border: 1px solid #333; }
-        .loading-status { font-size: 11px; color: #007aff; font-weight: bold; }
-        .refresh-btn { background: none; border: none; color: #aaa; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; padding: 2px; }
-        .refresh-btn:active { color: #007aff; }
+        /* Compact Sync Pill */
+        .status-container { display: flex; align-items: center; gap: 6px; background: #222; padding: 3px 8px; border-radius: 12px; border: 1px solid #333; }
+        .loading-status { font-size: 10px; color: #007aff; font-weight: bold; }
+        .refresh-btn { background: none; border: none; color: #aaa; cursor: pointer; font-size: 10px; display: flex; align-items: center; justify-content: center; }
 
-        .chart-container { display: flex; justify-content: space-around; align-items: flex-end; height: 160px; padding-top: 10px; }
-        .bar-wrapper { display: flex; flex-direction: column; align-items: center; width: 25%; height: 100%; justify-content: flex-end; }
-        .bar-outer { background: #2d2d2d; width: 35px; height: 120px; border-radius: 4px; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; position: relative; }
-        .bar-inner { background: #4cd964; width: 100%; height: 0%; transition: height 0.4s ease-out; }
-        .bar-label { margin-top: 8px; font-size: 13px; color: #aaa; font-weight: 600; }
-        .bar-count { font-size: 11px; color: #666; margin-bottom: 2px; position: absolute; width: 100%; text-align: center; bottom: 5px; font-weight: bold; color: #000; }
+        /* Chart Components & Streak Integration */
+        .chart-container { display: flex; justify-content: space-around; align-items: flex-end; height: 165px; padding-top: 5px; }
+        .bar-wrapper { display: flex; flex-direction: column; align-items: center; width: 30%; height: 100%; justify-content: flex-end; }
+        
+        .streak-badge { font-size: 11px; font-weight: 800; color: #ff9500; margin-bottom: 6px; background: rgba(255,149,0,0.1); padding: 2px 6px; border-radius: 8px; border: 1px solid rgba(255,149,0,0.2); display: inline-flex; align-items: center; gap: 2px; }
+        
+        .bar-outer { background: #2d2d2d; width: 38px; height: 110px; border-radius: 6px; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; position: relative; border: 1px solid #3a3a3a; }
+        .bar-inner { background: #4cd964; width: 100%; height: 0%; transition: height 0.4s cubic-bezier(0.1, 1, 0.1, 1); }
+        .bar-label { margin-top: 8px; font-size: 13px; color: #eee; font-weight: 700; }
+        .bar-count { font-size: 11px; margin-bottom: 2px; position: absolute; width: 100%; text-align: center; bottom: 4px; font-weight: 900; color: #000; }
 
         /* Accordions */
         .accordion { background: #1a1a1a; border-radius: 12px; border: 1px solid #262626; overflow: hidden; }
-        .accordion-header { padding: 15px; display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 15px; cursor: pointer; }
-        .accordion-header::after { content: '▼'; font-size: 10px; color: #888; transition: transform 0.2s; }
+        .accordion-header { padding: 15px; display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 14px; color: #ddd; cursor: pointer; }
+        .accordion-header::after { content: '▼'; font-size: 9px; color: #666; transition: transform 0.2s; }
         .accordion.open .accordion-header::after { transform: rotate(180deg); }
         
-        /* FIXED: Removed max-height block restraints to allow natural layout extensions */
         .accordion-content { display: none; padding: 0 15px 15px 15px; overflow: hidden; font-size: 13px; color: #aaa; }
         .accordion.open .accordion-content { display: block; }
         .log-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #262626; }
 
-        /* Anchored Input Panel */
+        /* Input Control Panel - Unified */
         .input-panel { background: #1a1a1a; border-radius: 12px; padding: 15px; border: 1px solid #262626; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 -4px 20px rgba(0,0,0,0.5); }
         .input-header { display: flex; justify-content: space-between; align-items: center; }
-        .input-title { font-size: 15px; font-weight: 700; }
-        
-        .input-controls-right { display: flex; gap: 8px; align-items: center; }
-        .panel-date-picker { background: #2d2d2d; color: white; border: 1px solid #333; padding: 4px 6px; border-radius: 6px; font-size: 12px; font-weight: 600; color-scheme: dark; }
-        .user-select { background: #2d2d2d; color: white; border: 1px solid #333; padding: 4px 8px; border-radius: 6px; font-weight: 600; font-size: 13px; }
+        .input-title { font-size: 14px; font-weight: 800; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px; }
+        .user-select { background: #2d2d2d; color: white; border: 1px solid #333; padding: 5px 10px; border-radius: 6px; font-weight: 700; font-size: 13px; color-scheme: dark; }
         
         .counter-grid { display: grid; grid-template-columns: 1fr 1.2fr 1fr; gap: 10px; align-items: center; }
         .counter-display { text-align: center; }
-        .counter-number { font-size: 42px; font-weight: 800; line-height: 1; }
-        .counter-unit { font-size: 11px; color: #888; font-weight: 700; letter-spacing: 1px; margin-top: 2px; }
+        .counter-number { font-size: 42px; font-weight: 800; line-height: 1; color: #fff; }
+        .counter-unit { font-size: 10px; color: #666; font-weight: 700; letter-spacing: 1px; margin-top: 2px; }
         
         .btn-col { display: flex; flex-direction: column; gap: 8px; }
         .btn { background: #2d2d2d; color: white; border: 1px solid #3f3f3f; border-radius: 8px; padding: 12px; font-weight: 700; font-size: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; }
-        .btn span { font-size: 9px; color: #888; font-weight: 500; margin-top: 1px; }
-        .btn-neg { background: #262626; height: 100%; justify-content: center; font-size: 20px; }
+        .btn span { font-size: 9px; color: #777; font-weight: 600; margin-top: 1px; }
+        .btn-neg { background: #262626; height: 100%; justify-content: center; font-size: 20px; border-color: #333; }
         
         .manual-input-box { background: #121212; border: 1px solid #333; border-radius: 6px; padding: 6px; width: 100%; text-align: center; color: white; font-size: 14px; margin-top: 5px; }
-        .submit-btn { background: #ffffff; color: #000000; border: none; border-radius: 8px; padding: 14px; font-weight: 800; font-size: 15px; text-align: center; width: 100%; margin-top: 5px; cursor: pointer; }
-        .submit-btn:disabled { background: #555; color: #aaa; }
+        .submit-btn { background: #ffffff; color: #000000; border: none; border-radius: 8px; padding: 14px; font-weight: 800; font-size: 15px; text-align: center; width: 100%; margin-top: 5px; cursor: pointer; box-shadow: 0 4px 12px rgba(255,255,255,0.1); }
+        .submit-btn:disabled { background: #444; color: #888; box-shadow: none; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>GLOBAL PROGRESS</h1>
+        <h1>BROTHERHOOD IRON</h1>
         <div class="date-badge-wrapper">
             <div class="date-badge" id="today-date">Today</div>
             <input type="date" id="main-view-date-picker" class="hidden-date-picker" onchange="changeViewDate(this.value)">
@@ -87,22 +85,26 @@
     <div class="main-content">
         <div class="card">
             <div class="card-header-row">
-                <div class="card-title" id="chart-card-title">Today's Totals</div>
+                <div class="card-title" id="chart-card-title">Day Totals</div>
                 <div class="status-container">
                     <div class="loading-status" id="load-status">Syncing...</div>
                     <button class="refresh-btn" onclick="fetchDataFromSheet()" title="Force Refresh">🔄</button>
                 </div>
             </div>
+            
             <div class="chart-container">
                 <div class="bar-wrapper">
+                    <div class="streak-badge" id="streak-Anthony">🔥 0</div>
                     <div class="bar-outer"><div class="bar-count" id="count-Anthony">0</div><div class="bar-inner" id="bar-Anthony"></div></div>
                     <div class="bar-label">Anthony</div>
                 </div>
                 <div class="bar-wrapper">
+                    <div class="streak-badge" id="streak-Nick">🔥 0</div>
                     <div class="bar-outer"><div class="bar-count" id="count-Nick">0</div><div class="bar-inner" id="bar-Nick"></div></div>
                     <div class="bar-label">Nick</div>
                 </div>
                 <div class="bar-wrapper">
+                    <div class="streak-badge" id="streak-Chris">🔥 0</div>
                     <div class="bar-outer"><div class="bar-count" id="count-Chris">0</div><div class="bar-inner" id="bar-Chris"></div></div>
                     <div class="bar-label">Chris</div>
                 </div>
@@ -112,29 +114,26 @@
         <div class="accordion" id="history-accordion">
             <div class="accordion-header" id="log-accordion-header" onclick="toggleAccordion('history-accordion')">Detailed Daily Log</div>
             <div class="accordion-content" id="log-content">
-                <div style="text-align:center; color:#555; padding: 10px;">Loading daily logs...</div>
+                <div style="text-align:center; color:#555; padding: 10px;">Loading history sheets...</div>
             </div>
         </div>
 
         <div class="accordion" id="trends-accordion">
-            <div class="accordion-header" onclick="toggleAccordion('trends-accordion')">Monthly Trends</div>
+            <div class="accordion-header" onclick="toggleAccordion('trends-accordion')">Monthly Accumulations</div>
             <div class="accordion-content" id="trends-content">
-                <div style="text-align:center; padding:10px; color:#aaa;">Monthly performance totals populate dynamically as records accumulate!</div>
+                <div style="text-align:center; padding:10px; color:#555;">Processing month data summaries...</div>
             </div>
         </div>
     </div>
 
     <div class="input-panel">
         <div class="input-header">
-            <div class="input-title">Add Pushups</div>
-            <div class="input-controls-right">
-                <input type="date" id="log-target-date" class="panel-date-picker">
-                <select class="user-select" id="user-select">
-                    <option value="Chris">Chris</option>
-                    <option value="Anthony">Anthony</option>
-                    <option value="Nick">Nick</option>
-                </select>
-            </div>
+            <div class="input-title">Log Pushups</div>
+            <select class="user-select" id="user-select">
+                <option value="Chris">Chris</option>
+                <option value="Anthony">Anthony</option>
+                <option value="Nick">Nick</option>
+            </select>
         </div>
 
         <div class="counter-grid">
@@ -157,6 +156,7 @@
     </div>
 
     <script>
+        // HARDCODED GOOGLE DEPLOYMENT LINK
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxxxrcbUtjxBVHJl_LaStWLn9fhnon0S79rewb1D1W_kMtQXbE7gjjWySoTtXVDmahO/exec"; 
 
         let currentCounter = 0;
@@ -164,10 +164,9 @@
         let selectedViewDateStr = new Date().toDateString(); 
         const GOAL = 100;
 
-        // Sync system calendar initialization default pointers safely
+        // Initialize Native Calendar Inputs
         const localISOString = new Date().toLocaleDateString('en-CA'); 
         document.getElementById('main-view-date-picker').value = localISOString;
-        document.getElementById('log-target-date').value = localISOString;
         updateDateDisplayLabels(new Date());
 
         function adjustCounter(amount) {
@@ -194,8 +193,8 @@
             const formatted = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
             const isToday = dateObj.toDateString() === new Date().toDateString();
             
-            document.getElementById('today-date').innerText = isToday ? `Today (${formatted})` : formatted;
-            document.getElementById('chart-card-title').innerText = isToday ? "Today's Totals" : `${formatted} Totals`;
+            document.getElementById('today-date').innerText = isToday ? `Today (${formatted}) 📅` : `${formatted} 📅`;
+            document.getElementById('chart-card-title').innerText = isToday ? "Today's Performance" : `${formatted} Performance`;
             document.getElementById('log-accordion-header').innerText = isToday ? "Detailed Daily Log" : `Logs for ${formatted}`;
         }
 
@@ -207,7 +206,68 @@
             processAndRenderData();
         }
 
+        // DYNAMIC STREAK CALCULATION ENGINE
+        function calculateStreaks() {
+            const userStreaks = { Anthony: 0, Nick: 0, Chris: 0 };
+            const userHistoricalMap = { Anthony: {}, Nick: {}, Chris: {} };
+            
+            // Step 1: Map out all historical volume totals aggregated by distinct date strings
+            masterSheetData.forEach(item => {
+                if(!item.timestamp || !userHistoricalMap.hasOwnProperty(item.name)) return;
+                const dateKey = new Date(item.timestamp).toDateString();
+                userHistoricalMap[item.name][dateKey] = (userHistoricalMap[item.name][dateKey] || 0) + item.reps;
+            });
+
+            const checkDay = new Date();
+            const todayStr = checkDay.toDateString();
+            
+            // Check yesterday to see if a streak is active
+            checkDay.setDate(checkDay.getDate() - 1);
+            const yesterdayStr = checkDay.toDateString();
+
+            ['Anthony', 'Nick', 'Chris'].forEach(user => {
+                const logs = userHistoricalMap[user];
+                
+                // If they haven't hit goal today AND didn't hit goal yesterday, streak is currently 0
+                const hitToday = (logs[todayStr] || 0) >= GOAL;
+                const hitYesterday = (logs[yesterdayStr] || 0) >= GOAL;
+                
+                if (!hitToday && !hitYesterday) {
+                    userStreaks[user] = 0;
+                    return;
+                }
+
+                // Crawl backward through history calculation loops until the chain breaks
+                let streakCount = 0;
+                const cursor = new Date(); // Start from today
+                
+                while(true) {
+                    const cursorStr = cursor.toDateString();
+                    const dayVolume = logs[cursorStr] || 0;
+                    
+                    if (dayVolume >= GOAL) {
+                        streakCount++;
+                    } else {
+                        // If checking today and they haven't finished yet, don't break the streak loop chain
+                        if (cursorStr !== todayStr) {
+                            break; 
+                        }
+                    }
+                    cursor.setDate(cursor.getDate() - 1); // Step one back day
+                }
+                userStreaks[user] = streakCount;
+            });
+
+            // Update DOM streak layout badges
+            ['Anthony', 'Nick', 'Chris'].forEach(user => {
+                document.getElementById(`streak-${user}`).innerText = `🔥 ${userStreaks[user]}`;
+            });
+        }
+
         function processAndRenderData() {
+            // First run global calculations engine
+            calculateStreaks();
+
             let dailyData = { Anthony: 0, Nick: 0, Chris: 0 };
             let filteredLogs = [];
             let monthlyTotals = { Anthony: 0, Nick: 0, Chris: 0 };
@@ -220,14 +280,14 @@
                 if(!item.timestamp) return;
                 const entryDate = new Date(item.timestamp);
                 
-                // Aggregate monthly trend analytics counters
+                // Aggregations matching month view calculations
                 if(entryDate.getMonth() === viewMonth && entryDate.getFullYear() === viewYear) {
                     if(monthlyTotals.hasOwnProperty(item.name)) {
                         monthlyTotals[item.name] += item.reps;
                     }
                 }
 
-                // Filter items matching active targeted dashboard date
+                // Filter rows matching timeline viewing state
                 if(entryDate.toDateString() === selectedViewDateStr) {
                     if(dailyData.hasOwnProperty(item.name)) {
                         dailyData[item.name] += item.reps;
@@ -237,7 +297,7 @@
                 }
             });
 
-            // Re-render Bar Graph UI Visuals
+            // Update Graphics
             ['Anthony', 'Nick', 'Chris'].forEach(user => {
                 const total = dailyData[user];
                 document.getElementById(`count-${user}`).innerText = total;
@@ -245,10 +305,10 @@
                 document.getElementById(`bar-${user}`).style.height = `${Math.max(percentage, 0)}%`;
             });
 
-            // Re-render Detailed History Rows
+            // Rebuild History Logs Container
             const container = document.getElementById('log-content');
             if (filteredLogs.length === 0) {
-                container.innerHTML = '<div style="text-align:center; color:#555; padding: 10px;">No entries logged for this date.</div>';
+                container.innerHTML = '<div style="text-align:center; color:#555; padding: 10px;">No records found for this date.</div>';
             } else {
                 container.innerHTML = filteredLogs.map(log => `
                     <div class="log-item">
@@ -258,11 +318,11 @@
                 `).join('');
             }
 
-            // Build Monthly Trends Panel text
+            // Build Monthly Trends Summary panel
             const monthLabel = currentViewObj.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
             document.getElementById('trends-content').innerHTML = `
-                <div style="font-weight: bold; margin-bottom: 8px; color: #eee; border-bottom: 1px solid #333; padding-bottom: 5px;">${monthLabel} Total Collection</div>
-                <div style="display: flex; flex-direction: column; gap: 8px; padding-top: 5px;">
+                <div style="font-weight: 700; margin-bottom: 8px; color: #4cd964; border-bottom: 1px solid #262626; padding-bottom: 6px; font-size:12px;">${monthLabel.toUpperCase()} TOTAL VOLUME</div>
+                <div style="display: flex; flex-direction: column; gap: 8px; padding-top: 4px;">
                     <div style="display:flex; justify-content:space-between;"><span>Anthony:</span><strong>${monthlyTotals.Anthony} reps</strong></div>
                     <div style="display:flex; justify-content:space-between;"><span>Nick:</span><strong>${monthlyTotals.Nick} reps</strong></div>
                     <div style="display:flex; justify-content:space-between;"><span>Chris:</span><strong>${monthlyTotals.Chris} reps</strong></div>
@@ -281,7 +341,7 @@
                     document.getElementById('load-status').innerText = "Online";
                 })
                 .catch(err => {
-                    console.error("Error reading from spreadsheet:", err);
+                    console.error("Error reading backend spreadsheet logs:", err);
                     document.getElementById('load-status').innerText = "Offline Mode";
                 });
         }
@@ -289,26 +349,18 @@
         function submitLog() {
             const selectedUser = document.getElementById('user-select').value;
             const repsToLog = currentCounter;
-            const chosenDateVal = document.getElementById('log-target-date').value;
 
             if (repsToLog === 0) return;
 
-            let targetTimestamp = new Date();
-            if(chosenDateVal !== new Date().toLocaleDateString('en-CA')) {
-                targetTimestamp = new Date(chosenDateVal + "T12:00:00");
-            }
+            // CRITICAL FIX: Direct target logs explicitly bind directly to current timeline viewpoint context!
+            const targetTimestamp = new Date(selectedViewDateStr + "T12:00:00");
 
+            // Optimistic UI Append
             masterSheetData.unshift({
                 name: selectedUser,
                 reps: repsToLog,
                 timestamp: targetTimestamp.toISOString()
             });
-
-            if(targetTimestamp.toDateString() !== selectedViewDateStr) {
-                selectedViewDateStr = targetTimestamp.toDateString();
-                document.getElementById('main-view-date-picker').value = chosenDateVal;
-                updateDateDisplayLabels(targetTimestamp);
-            }
 
             processAndRenderData();
             
