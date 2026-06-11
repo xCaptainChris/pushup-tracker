@@ -17,7 +17,7 @@
         .main-content { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-bottom: 10px; }
         
         /* Today's Totals Card */
-        .card { background: #1a1a1a; border-radius: 12px; padding: 15px; border: 1px solid #262626; }
+        .card { background: #1a1a1a; border-radius: 12px; padding: 15px; border: 1px solid #262626; position: relative; }
         .card-title { font-size: 16px; font-weight: 700; margin-bottom: 15px; color: #eee; }
         
         .chart-container { display: flex; justify-content: space-around; align-items: flex-end; height: 160px; padding-top: 10px; }
@@ -26,6 +26,9 @@
         .bar-inner { background: #4cd964; width: 100%; height: 0%; transition: height 0.4s ease-out; }
         .bar-label { margin-top: 8px; font-size: 13px; color: #aaa; font-weight: 600; }
         .bar-count { font-size: 11px; color: #666; margin-bottom: 2px; position: absolute; width: 100%; text-align: center; bottom: 5px; font-weight: bold; color: #000; }
+
+        /* Loading Indicator */
+        .loading-status { font-size: 11px; color: #007aff; position: absolute; top: 18px; right: 15px; font-weight: bold; }
 
         /* Accordions */
         .accordion { background: #1a1a1a; border-radius: 12px; border: 1px solid #262626; overflow: hidden; }
@@ -67,6 +70,7 @@
     <div class="main-content">
         <div class="card">
             <div class="card-title">Today's Totals</div>
+            <div class="loading-status" id="load-status">Syncing...</div>
             <div class="chart-container">
                 <div class="bar-wrapper">
                     <div class="bar-outer"><div class="bar-count" id="count-Anthony">0</div><div class="bar-inner" id="bar-Anthony"></div></div>
@@ -86,7 +90,7 @@
         <div class="accordion" id="history-accordion">
             <div class="accordion-header" onclick="toggleAccordion('history-accordion')">Detailed Daily Log</div>
             <div class="accordion-content" id="log-content">
-                <div style="text-align:center; color:#555; padding: 10px;">No entries logged today yet.</div>
+                <div style="text-align:center; color:#555; padding: 10px;">Loading daily logs...</div>
             </div>
         </div>
 
@@ -129,16 +133,13 @@
 
     <script>
         // --- CONFIGURATION ---
-        // Updated to your custom Google Apps Script link
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxxxrcbUtjxBVHJl_LaStWLn9fhnon0S79rewb1D1W_kMtQXbE7gjjWySoTtXVDmahO/exec"; 
 
-        // Local state management to keep everything fast and instantaneous
         let currentCounter = 0;
-        const dailyData = { Anthony: 0, Nick: 0, Chris: 0 };
-        const localLogs = [];
+        let dailyData = { Anthony: 0, Nick: 0, Chris: 0 };
+        let localLogs = [];
         const GOAL = 100;
 
-        // Set date text
         document.getElementById('today-date').innerText = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
         function adjustCounter(amount) {
@@ -165,10 +166,8 @@
             ['Anthony', 'Nick', 'Chris'].forEach(user => {
                 const total = dailyData[user];
                 document.getElementById(`count-${user}`).innerText = total;
-                
-                // Calculate bar height percentage capped at 100% visual height
                 const percentage = Math.min((total / GOAL) * 100, 100);
-                document.getElementById(`bar-${user}`).style.height = `${Math.max(percentage, 0)}%`;
+                document.getElementById(`bar-${user}`).style.style.height = `${Math.max(percentage, 0)}%`;
             });
         }
 
@@ -186,13 +185,52 @@
             `).join('');
         }
 
+        // NEW FEATURE: Fetch data live from the spreadsheet upon launch
+        function fetchDataFromSheet() {
+            if(!GOOGLE_SCRIPT_URL) return;
+            
+            document.getElementById('load-status').innerText = "Syncing...";
+            
+            fetch(GOOGLE_SCRIPT_URL)
+                .then(response => response.json())
+                .then(data => {
+                    // Reset local stats
+                    dailyData = { Anthony: 0, Nick: 0, Chris: 0 };
+                    localLogs = [];
+                    
+                    const todayStr = new Date().toDateString();
+                    
+                    data.forEach(item => {
+                        const entryDate = new Date(item.timestamp);
+                        
+                        // Only add to dashboard charts if the log entry is from today
+                        if(entryDate.toDateString() === todayStr) {
+                            if(dailyData.hasOwnProperty(item.name)) {
+                                dailyData[item.name] += item.reps;
+                            }
+                            
+                            const timeString = entryDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                            localLogs.push({ name: item.name, reps: item.reps, time: timeString });
+                        }
+                    });
+                    
+                    updateCharts();
+                    renderLogs();
+                    document.getElementById('load-status').innerText = "Online";
+                })
+                .catch(err => {
+                    console.error("Error reading from spreadsheet:", err);
+                    document.getElementById('load-status').innerText = "Offline Mode";
+                });
+        }
+
         function submitLog() {
             const selectedUser = document.getElementById('user-select').value;
             const repsToLog = currentCounter;
 
             if (repsToLog === 0) return;
 
-            // 1. Update UI Instantly (Vibe-first optimization)
+            // Update UI Instantly
             dailyData[selectedUser] += repsToLog;
             const timeString = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             localLogs.unshift({ name: selectedUser, reps: repsToLog, time: timeString });
@@ -200,17 +238,15 @@
             updateCharts();
             renderLogs();
             
-            // Reset counter
             currentCounter = 0;
             updateCounterDisplay();
 
-            // 2. Network/Google Sheets syncing in the background
-            // FIXED: Changed logic to check that a valid URL is present before trying to fire the sync fetch
-            if(GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL !== "YOUR_GOOGLE_SHEET_URL_HERE") {
+            // Sync background
+            if(GOOGLE_SCRIPT_URL) {
                 const btn = document.getElementById('submit-btn');
                 btn.disabled = true;
+                document.getElementById('load-status').innerText = "Saving...";
                 
-                // Post data silently to google sheet backend
                 fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
                     mode: 'no-cors',
@@ -218,15 +254,17 @@
                     body: JSON.stringify({ name: selectedUser, reps: repsToLog, timestamp: new Date().toISOString() })
                 }).then(() => {
                     btn.disabled = false;
+                    document.getElementById('load-status').innerText = "Online";
                 }).catch(err => {
                     console.error("Sheet sync error: ", err);
                     btn.disabled = false;
+                    document.getElementById('load-status').innerText = "Sync Error";
                 });
             }
         }
 
-        // Run baseline render on startup
-        updateCharts();
+        // Initialize by pull data from sheet right away
+        fetchDataFromSheet();
     </script>
 </body>
 </html>
