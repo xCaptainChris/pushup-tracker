@@ -3,20 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>REP MATRIX</title>
+    <title>REP MATRIX [PLAYGROUND - FX]</title>
     
-    <link rel="icon" type="image/svg+xml" href="icon-light.svg" media="(prefers-color-scheme: light)">
-    <link rel="icon" type="image/svg+xml" href="icon-dark.svg" media="(prefers-color-scheme: dark)">
-
-    <link rel="apple-touch-icon" href="icon-dark.png">
-
-    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22Pushup%20Tracker%22,%22short_name%22:%22Pushups%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22#121212%22,%22theme_color%22:%22#121212%22,%22icons%22:[{%22src%22:%22icon-dark.png%22,%22sizes%22:%22512x512%22,%22type%22:%22image/png%22}]}">
-    
-    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22Pushup%20Tracker%22,%22short_name%22:%22Pushups%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22#121212%22,%22theme_color%22:%22#121212%22}">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
         body { background-color: #121212; color: #ffffff; padding: 15px; display: flex; flex-direction: column; height: 100vh; height: -webkit-fill-available; -webkit-user-select: none; user-select: none; }
         
+        .playground-banner { background: #ff9500; color: #000; text-align: center; font-size: 11px; font-weight: 900; padding: 4px; letter-spacing: 1px; text-transform: uppercase; margin: -15px -15px 10px -15px; }
+
         .header { display: flex; flex-direction: column; align-items: center; margin-bottom: 12px; gap: 6px; }
         .header h1 { font-size: 24px; font-weight: 900; letter-spacing: 2px; color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
         
@@ -31,18 +25,36 @@
         .card-title { font-size: 15px; font-weight: 700; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px; }
         
         .status-container { display: flex; align-items: center; gap: 6px; background: #222; padding: 3px 8px; border-radius: 12px; border: 1px solid #333; }
-        .loading-status { font-size: 10px; color: #007aff; font-weight: bold; }
+        .loading-status { font-size: 10px; color: #ff9500; font-weight: bold; }
         .refresh-btn { background: none; border: none; color: #aaa; cursor: pointer; font-size: 10px; display: flex; align-items: center; justify-content: center; }
 
-        .chart-container { display: flex; justify-content: space-around; align-items: flex-end; height: 165px; padding-top: 5px; }
-        .bar-wrapper { display: flex; flex-direction: column; align-items: center; width: 30%; height: 100%; justify-content: flex-end; }
+        .chart-container { display: flex; justify-content: space-around; align-items: flex-end; height: 175px; padding-top: 5px; position: relative; }
+        .bar-wrapper { display: flex; flex-direction: column; align-items: center; width: 32%; height: 100%; justify-content: flex-end; position: relative; }
         
         .streak-badge { font-size: 11px; font-weight: 800; color: #ff9500; margin-bottom: 6px; background: rgba(255,149,0,0.1); padding: 2px 6px; border-radius: 8px; border: 1px solid rgba(255,149,0,0.2); display: inline-flex; align-items: center; gap: 2px; }
         
-        .bar-outer { background: #2d2d2d; width: 38px; height: 110px; border-radius: 6px; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; position: relative; border: 1px solid #3a3a3a; }
-        .bar-inner { background: #4cd964; width: 100%; height: 0%; transition: height 0.4s cubic-bezier(0.1, 1, 0.1, 1); }
-        .bar-label { margin-top: 8px; font-size: 13px; color: #eee; font-weight: 700; }
-        .bar-count { font-size: 11px; margin-bottom: 2px; position: absolute; width: 100%; text-align: center; bottom: 4px; font-weight: 900; color: #000; }
+        .bar-outer { background: #2d2d2d; width: 42px; height: 110px; border-radius: 6px; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; position: relative; border: 1px solid #3a3a3a; }
+        
+        .bar-layer { width: 100%; height: 0%; transition: height 0.6s cubic-bezier(0.1, 1, 0.1, 1), clip-path 0.6s cubic-bezier(0.1, 1, 0.1, 1); position: absolute; bottom: 0; left: 0; border-radius: 0 0 5px 5px; }
+        
+        .layer-base { background: linear-gradient(180deg,#6dff8f,#00ff66); box-shadow: 0 0 10px rgba(0,255,102,.45); z-index: 1; }
+        .layer-backfill { background: linear-gradient(180deg,#40c4ff,#00e5ff); z-index: 2; box-shadow: 0 0 12px rgba(0,229,255,.65); }
+        .layer-flame { background: linear-gradient(0deg,#ff3300,#ff7700,#ffd000); z-index: 3; animation: flamePulse 1.5s ease-in-out infinite alternate; box-shadow: 0 -2px 14px rgba(255,119,0,.7),0 0 18px rgba(255,170,0,.4); }
+
+        @keyframes flamePulse {
+            0% { filter: brightness(.9) saturate(1); opacity:.9; }
+            50% { filter: brightness(1.35) saturate(1.3); opacity:1; }
+            100% { filter: brightness(1.1) saturate(1.15); opacity:.95; }
+        }
+            100% { filter: brightness(1.2) contrast(1.1); opacity: 1; }
+        }
+
+        .bar-label { margin-top: 8px; font-size: 13px; color: #eee; font-weight: 700; text-align: center; }
+        .bar-count { font-size: 11px; margin-bottom: 2px; position: absolute; width: 100%; text-align: center; bottom: 4px; font-weight: 900; color: #000; z-index: 10; }
+
+        .playground-legend { display: flex; justify-content: center; gap: 12px; font-size: 10px; font-weight: 700; margin-top: -4px; margin-bottom: 4px; }
+        .legend-item { display: flex; align-items: center; gap: 4px; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; }
 
         .accordion { background: #1a1a1a; border-radius: 12px; border: 1px solid #262626; overflow: hidden; }
         .accordion-header { padding: 15px; display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 14px; color: #ddd; cursor: pointer; }
@@ -51,7 +63,8 @@
         
         .accordion-content { display: none; padding: 0 15px 15px 15px; overflow: hidden; font-size: 13px; color: #aaa; }
         .accordion.open .accordion-content { display: block; }
-        .log-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #262626; }
+        .log-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #262626; font-size: 12px; }
+        .log-timestamp { color: #555; font-size: 10px; font-weight: 600; margin-left: 6px; }
 
         .trend-row { display: flex; flex-direction: column; gap: 4px; margin-top: 12px; }
         .trend-meta { display: flex; justify-content: space-between; font-size: 13px; color: #eee; font-weight: 600; }
@@ -76,11 +89,13 @@
         .btn-neg { background: #262626; border-color: #333; }
         
         .manual-input-box { background: #121212; border: 1px solid #333; border-radius: 6px; padding: 6px; width: 100%; text-align: center; color: white; font-size: 14px; margin-top: 5px; }
-        .submit-btn { background: #ffffff; color: #000000; border: none; border-radius: 8px; padding: 14px; font-weight: 900; font-size: 16px; letter-spacing: 1.5px; text-align: center; width: 100%; margin-top: 5px; cursor: pointer; box-shadow: 0 4px 12px rgba(255,255,255,0.1); }
+        .submit-btn { background: #ffffff; color: #000000; border: none; border-radius: 8px; padding: 14px; font-weight: 900; font-size: 16px; letter-spacing: 1.5px; text-transform: uppercase; text-align: center; width: 100%; margin-top: 5px; cursor: pointer; box-shadow: 0 4px 12px rgba(255,255,255,0.1); }
         .submit-btn:disabled { background: #444; color: #888; box-shadow: none; }
     </style>
 </head>
 <body>
+
+    <div class="playground-banner">⚠️ Sandbox Mode - Graph FX Engineering</div>
 
     <div class="header">
         <h1>REP MATRIX</h1>
@@ -95,25 +110,48 @@
             <div class="card-header-row">
                 <div class="card-title" id="chart-card-title">Day Totals</div>
                 <div class="status-container">
-                    <div class="loading-status" id="load-status">Syncing...</div>
-                    <button class="refresh-btn" onclick="fetchDataFromSheet()" title="Force Refresh">🔄</button>
+                    <div class="loading-status" id="load-status">Local Sandbox</div>
+                    <button class="refresh-btn" onclick="fetchDataFromSheet()" title="Reset Mock Data">🔄</button>
                 </div>
             </div>
             
-            <div class="chart-container">
-                <div class="bar-wrapper">
+            <div class="playground-legend">
+                <div class="legend-item"><div class="dot" style="background:#4cd964;"></div> Normal</div>
+                <div class="legend-item"><div class="dot" style="background:#007aff;"></div> Backfilled</div>
+                <div class="legend-item"><div class="dot" style="background:#ff9500;"></div> Flame Overflow</div>
+            </div>
+            
+            <div class="chart-container" id="chart-viewport">
+                
+
+                <div class="bar-wrapper" id="wrap-Anthony">
                     <div class="streak-badge" id="streak-Anthony">🔥 0</div>
-                    <div class="bar-outer"><div class="bar-count" id="count-Anthony">0</div><div class="bar-inner" id="bar-Anthony"></div></div>
+                    <div class="bar-outer">
+                        <div class="bar-count" id="count-Anthony">0</div>
+                        <div class="bar-layer layer-base" id="bar-base-Anthony"></div>
+                        <div class="bar-layer layer-backfill" id="bar-backfill-Anthony"></div>
+                        <div class="bar-layer layer-flame" id="bar-flame-Anthony"></div>
+                    </div>
                     <div class="bar-label">Anthony</div>
                 </div>
-                <div class="bar-wrapper">
+                <div class="bar-wrapper" id="wrap-Nick">
                     <div class="streak-badge" id="streak-Nick">🔥 0</div>
-                    <div class="bar-outer"><div class="bar-count" id="count-Nick">0</div><div class="bar-inner" id="bar-Nick"></div></div>
+                    <div class="bar-outer">
+                        <div class="bar-count" id="count-Nick">0</div>
+                        <div class="bar-layer layer-base" id="bar-base-Nick"></div>
+                        <div class="bar-layer layer-backfill" id="bar-backfill-Nick"></div>
+                        <div class="bar-layer layer-flame" id="bar-flame-Nick"></div>
+                    </div>
                     <div class="bar-label">Nick</div>
                 </div>
-                <div class="bar-wrapper">
+                <div class="bar-wrapper" id="wrap-Chris">
                     <div class="streak-badge" id="streak-Chris">🔥 0</div>
-                    <div class="bar-outer"><div class="bar-count" id="count-Chris">0</div><div class="bar-inner" id="bar-Chris"></div></div>
+                    <div class="bar-outer">
+                        <div class="bar-count" id="count-Chris">0</div>
+                        <div class="bar-layer layer-base" id="bar-base-Chris"></div>
+                        <div class="bar-layer layer-backfill" id="bar-backfill-Chris"></div>
+                        <div class="bar-layer layer-flame" id="bar-flame-Chris"></div>
+                    </div>
                     <div class="bar-label">Chris</div>
                 </div>
             </div>
@@ -122,7 +160,7 @@
         <div class="accordion" id="history-accordion">
             <div class="accordion-header" id="log-accordion-header" onclick="toggleAccordion('history-accordion')">Detailed Daily Log</div>
             <div class="accordion-content" id="log-content">
-                <div style="text-align:center; color:#555; padding: 10px;">Loading history sheets...</div>
+                <div style="text-align:center; color:#555; padding: 10px;">Loading historical array...</div>
             </div>
         </div>
 
@@ -163,13 +201,10 @@
             </div>
         </div>
 
-        <button class="submit-btn" id="submit-btn" onclick="submitLog()">PUSH!</button>
+        <button class="submit-btn" id="submit-btn" onclick="submitLog()">Test Submit!</button>
     </div>
 
     <script>
-        // BACKEND SHEET LINK
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxxxrcbUtjxBVHJl_LaStWLn9fhnon0S79rewb1D1W_kMtQXbE7gjjWySoTtXVDmahO/exec"; 
-
         let currentCounter = 0;
         let masterSheetData = []; 
         let selectedViewISOStr = new Date().toLocaleDateString('en-CA'); 
@@ -232,40 +267,41 @@
 
             const checkDay = new Date();
             const todayStr = checkDay.toDateString();
-            
-            checkDay.setDate(checkDay.getDate() - 1);
-            const yesterdayStr = checkDay.toDateString();
 
             ['Anthony', 'Nick', 'Chris'].forEach(user => {
                 const logs = userHistoricalMap[user];
-                
-                // Enforced protection floor here as well so historical math won't break streaks
-                const todayTotal = Math.max(logs[todayStr] || 0, 0);
-                const yesterdayTotal = Math.max(logs[yesterdayStr] || 0, 0);
-                
-                const hitToday = todayTotal >= GOAL;
-                const hitYesterday = yesterdayTotal >= GOAL;
-                
-                if (!hitToday && !hitYesterday) {
-                    userStreaks[user] = 0;
-                    return;
-                }
-
                 let streakCount = 0;
                 const cursor = new Date(); 
                 
                 while(true) {
                     const cursorStr = cursor.toDateString();
-                    const dayVolume = Math.max(logs[cursorStr] || 0, 0);
+                    const prevDay = new Date(cursor); prevDay.setDate(prevDay.getDate() - 1);
+                    const prevDayStr = prevDay.toDateString();
                     
-                    if (dayVolume >= GOAL) {
-                        streakCount++;
-                    } else {
-                        if (cursorStr !== todayStr) {
-                            break; 
+                    let trueToday = Math.max(logs[cursorStr] || 0, 0);
+                    let trueYesterday = Math.max(logs[prevDayStr] || 0, 0);
+
+                    if (trueYesterday < GOAL && trueToday > GOAL) {
+                        const rawSurplus = trueToday - GOAL;
+                        const availableLoanableReps = Math.floor(rawSurplus / 2); 
+                        const neededReps = GOAL - trueYesterday;
+                        const loan = Math.min(availableLoanableReps, neededReps);
+                        trueYesterday += loan;
+                    
+                    
+                    if (trueToday >= GOAL || (cursorStr === todayStr && trueYesterday >= GOAL)) {
+                        if (trueToday >= GOAL || (cursorStr === todayStr && Math.max(logs[cursorStr]||0,0) + trueYesterday >= GOAL )) {
+                             streakCount++;
+                        } else if (cursorStr === todayStr) {
+                             // Skip allowance
+                        } else {
+                            break;
                         }
+                    } else {
+                        if (cursorStr !== todayStr) break; 
                     }
                     cursor.setDate(cursor.getDate() - 1); 
+                    if(cursor.getFullYear() < 2025) break; 
                 }
                 userStreaks[user] = streakCount;
             });
@@ -276,59 +312,128 @@
         }
 
         function processAndRenderData() {
-            calculateStreaks();
-
-            let dailyData = { Anthony: 0, Nick: 0, Chris: 0 };
-            let filteredLogs = [];
+            const userDateMap = { Anthony: {}, Nick: {}, Chris: {} };
             let monthlyTotals = { Anthony: 0, Nick: 0, Chris: 0 };
-            
+            let rawChronologicalLogs = [];
+
             const currentViewObj = new Date(selectedViewISOStr + "T12:00:00");
             const viewMonth = currentViewObj.getMonth();
             const viewYear = currentViewObj.getFullYear();
             const selectedDateStringCompare = currentViewObj.toDateString();
 
+            const targetDateStr = currentViewObj.toDateString();
+            const tomorrowObj = new Date(currentViewObj); tomorrowObj.setDate(tomorrowObj.getDate() + 1);
+            const tomorrowDateStr = tomorrowObj.toDateString();
+            const yesterdayObj = new Date(currentViewObj); yesterdayObj.setDate(yesterdayObj.getDate() - 1);
+            const yesterdayDateStr = yesterdayObj.toDateString();
+
             masterSheetData.forEach(item => {
                 if(!item.timestamp) return;
                 const entryDate = new Date(item.timestamp);
+                const dKey = entryDate.toDateString();
                 
+                if(userDateMap.hasOwnProperty(item.name)) {
+                    userDateMap[item.name][dKey] = (userDateMap[item.name][dKey] || 0) + item.reps;
+                }
+
                 if(entryDate.getMonth() === viewMonth && entryDate.getFullYear() === viewYear) {
                     if(monthlyTotals.hasOwnProperty(item.name)) {
                         monthlyTotals[item.name] += item.reps;
                     }
                 }
 
-                if(entryDate.toDateString() === selectedDateStringCompare) {
-                    if(dailyData.hasOwnProperty(item.name)) {
-                        dailyData[item.name] += item.reps;
-                    }
+                if(dKey === selectedDateStringCompare) {
                     const timeString = entryDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                    filteredLogs.push({ name: item.name, reps: item.reps, time: timeString });
+                    rawChronologicalLogs.push({ name: item.name, reps: item.reps, time: timeString, ms: entryDate.getTime() });
                 }
             });
 
+            // Restore the log array back to chronological entry sequence order
+            rawChronologicalLogs.sort((a, b) => b.ms - a.ms);
+
+            calculateStreaks();
+
             ['Anthony', 'Nick', 'Chris'].forEach(user => {
-                // Safeguard: daily total display value will never fall below 0
-                const rawTotal = dailyData[user];
-                const cleanTotal = Math.max(rawTotal, 0);
+                const logs = userDateMap[user] || {};
                 
-                document.getElementById(`count-${user}`).innerText = cleanTotal;
-                const percentage = Math.min((cleanTotal / GOAL) * 100, 100);
-                document.getElementById(`bar-${user}`).style.height = `${Math.max(percentage, 0)}%`;
+                let rawTargetDay = Math.max(logs[targetDateStr] || 0, 0);
+                let rawYesterday = Math.max(logs[yesterdayDateStr] || 0, 0);
+                let rawTomorrow = Math.max(logs[tomorrowDateStr] || 0, 0);
+
+                let backfillReceived = 0;
+                let overflowFlame = 0;
+
+                // 1. Check backward loan incoming from tomorrow
+                if (rawTargetDay < GOAL && rawTomorrow > GOAL) {
+                    const rawSurplus = rawTomorrow - GOAL;
+                    const availableLoanableReps = Math.floor(rawSurplus / 2); 
+                    const neededReps = GOAL - rawTargetDay;
+                    backfillReceived = Math.min(availableLoanableReps, neededReps);
+                }
+
+                // 2. Check backward loan outgoing from today to yesterday
+                let activeLoanOutCost = 0; 
+                let actualLoanDelivered = 0;
+                if (rawTargetDay > GOAL && rawYesterday < GOAL) {
+                    const rawSurplus = rawTargetDay - GOAL;
+                    const availableLoanableReps = Math.floor(rawSurplus / 2); 
+                    const neededReps = GOAL - rawYesterday;
+                    
+                    actualLoanDelivered = Math.min(availableLoanableReps, neededReps);
+                    activeLoanOutCost = actualLoanDelivered * 2; 
+                }
+
+                let displayedReps = rawTargetDay;
+                if (rawTargetDay > GOAL) {
+                    overflowFlame = Math.max(rawTargetDay - GOAL - activeLoanOutCost, 0);
+                    displayedReps = GOAL; 
+                }
+
+                // Setup target values to assign immediately or right after animation fires
+                const finalCountValue = (rawTargetDay > GOAL) ? (GOAL + overflowFlame) : (rawTargetDay + backfillReceived);
+                const finalBasePct = Math.min((displayedReps / GOAL) * 100, 100);
+                const finalBackfillPct = Math.min(((rawTargetDay + backfillReceived) / GOAL) * 100, 100);
+                const finalFlamePct = Math.min((overflowFlame / GOAL) * 100, 100);
+
+                const countEl = document.getElementById(`count-${user}`);
+                const baseEl = document.getElementById(`bar-base-${user}`);
+                const backfillEl = document.getElementById(`bar-backfill-${user}`);
+                const flameEl = document.getElementById(`bar-flame-${user}`);
+
+                // ANIMATION FX LOGIC ENGINE: Only fire bubble sequence if viewing "Today" layout and transaction active
+                
+                    
+                    countEl.innerText = finalCountValue;
+                    baseEl.style.height = `${finalBasePct}%`;
+                    backfillEl.style.height = `${finalBackfillPct}%`;
+                    if (backfillReceived > 0) {
+                        backfillEl.style.clipPath = `inset(${100 - finalBackfillPct}% 0% ${finalBasePct}% 0%)`;
+                    } else {
+                        backfillEl.style.clipPath = 'none';
+                        backfillEl.style.height = '0%';
+                    }
+                    flameEl.style.height = `${finalFlamePct}%`;
+                }
             });
 
+            // Detailed daily log layout generation sequence logic
             const container = document.getElementById('log-content');
-            if (filteredLogs.length === 0) {
-                container.innerHTML = '<div style="text-align:center; color:#555; padding: 10px;">No records found for this date.</div>';
+            if (rawChronologicalLogs.length === 0) {
+                container.innerHTML = '<div style="text-align:center; color:#555; padding: 10px;">No individual entries signed for this block.</div>';
             } else {
-                container.innerHTML = filteredLogs.map(log => `
+                container.innerHTML = rawChronologicalLogs.map(log => `
                     <div class="log-item">
-                        <strong>${log.name}</strong>
-                        <span>${log.reps > 0 ? '+' : ''}${log.reps} reps <small style="color:#555;margin-left:5px;">${log.time}</small></span>
+                        <div>
+                            <strong>${log.name}</strong>
+                            <span class="log-timestamp">${log.time}</span>
+                        </div>
+                        <span style="font-weight:700; color: ${log.reps > 0 ? '#4cd964' : '#ff4500'}">
+                            ${log.reps > 0 ? '+' : ''}${log.reps} REPS
+                        </span>
                     </div>
                 `).join('');
             }
 
-            // Safeguard: monthly totals will also floor at 0
             const cleanAnthonyMonth = Math.max(monthlyTotals.Anthony, 0);
             const cleanNickMonth = Math.max(monthlyTotals.Nick, 0);
             const cleanChrisMonth = Math.max(monthlyTotals.Chris, 0);
@@ -358,19 +463,29 @@
         }
 
         function fetchDataFromSheet() {
-            document.getElementById('load-status').innerText = "Syncing...";
+            document.getElementById('load-status').innerText = "Syncing Mock...";
             
-            fetch(GOOGLE_SCRIPT_URL)
-                .then(response => response.json())
-                .then(data => {
-                    masterSheetData = Array.isArray(data) ? data : [];
-                    processAndRenderData();
-                    document.getElementById('load-status').innerText = "Online";
-                })
-                .catch(err => {
-                    console.error("Backend spreadsheet sync issue:", err);
-                    document.getElementById('load-status').innerText = "Offline Mode";
-                });
+            const dummyTodayISO = new Date().toLocaleDateString('en-CA');
+            const yesterdayObj = new Date(); yesterdayObj.setDate(yesterdayObj.getDate() - 1);
+            const dummyYesterdayISO = yesterdayObj.toLocaleDateString('en-CA');
+
+            masterSheetData = [
+                // Detailed logs restored back to listing independent transactional inputs chronologically
+                { name: "Chris", reps: 60, timestamp: `${dummyTodayISO}T14:22:00.000Z` },
+                { name: "Chris", reps: 80, timestamp: `${dummyTodayISO}T08:30:00.000Z` }, // Total 140 reps today
+                { name: "Chris", reps: 80, timestamp: `${dummyYesterdayISO}T12:00:00.000Z` },
+
+                { name: "Anthony", reps: 150, timestamp: `${dummyTodayISO}T09:15:00.000Z` },
+                { name: "Anthony", reps: 100, timestamp: `${dummyYesterdayISO}T12:00:00.000Z` },
+
+                { name: "Nick", reps: 65, timestamp: `${dummyTodayISO}T10:00:00.000Z` },
+                { name: "Nick", reps: 100, timestamp: `${dummyYesterdayISO}T12:00:00.000Z` }
+            ];
+
+            setTimeout(() => {
+                processAndRenderData();
+                document.getElementById('load-status').innerText = "Sandbox Loaded";
+            }, 300);
         }
 
         function submitLog() {
@@ -379,7 +494,7 @@
 
             if (repsToLog === 0) return;
 
-            const targetTimestamp = new Date(selectedViewISOStr + "T12:00:00");
+            const targetTimestamp = new Date(); // Use actual live current timestamp record
 
             masterSheetData.unshift({
                 name: selectedUser,
@@ -394,24 +509,30 @@
 
             const btn = document.getElementById('submit-btn');
             btn.disabled = true;
-            document.getElementById('load-status').innerText = "Saving...";
+            document.getElementById('load-status').innerText = "Mock Saving...";
             
-            fetch(GOOGLE_SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: selectedUser, reps: repsToLog, timestamp: targetTimestamp.toISOString() })
-            }).then(() => {
+            setTimeout(() => {
                 btn.disabled = false;
-                document.getElementById('load-status').innerText = "Online";
-                setTimeout(fetchDataFromSheet, 1200);
-            }).catch(err => {
-                console.error("Sheet sync error: ", err);
-                btn.disabled = false;
-                document.getElementById('load-status').innerText = "Sync Error";
-            });
+                document.getElementById('load-status').innerText = "Sandbox Mode";
+            }, 400);
         }
 
+        function syncManualInput(val) {
+            if(val === "") {
+                currentCounter = 0;
+                document.getElementById('counter-val').innerText = currentCounter;
+                return;
+            }
+            currentCounter = parseInt(val) || 0;
+            document.getElementById('counter-val').innerText = currentCounter;
+        }
+
+        function updateCounterDisplay() {
+            document.getElementById('counter-val').innerText = currentCounter;
+            document.getElementById('manual-input').value = currentCounter === 0 ? "" : currentCounter;
+        }
+
+        toggleAccordion('history-accordion');
         fetchDataFromSheet();
     </script>
 </body>
