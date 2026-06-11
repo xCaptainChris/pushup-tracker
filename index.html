@@ -167,7 +167,8 @@
                 const total = dailyData[user];
                 document.getElementById(`count-${user}`).innerText = total;
                 const percentage = Math.min((total / GOAL) * 100, 100);
-                document.getElementById(`bar-${user}`).style.style.height = `${Math.max(percentage, 0)}%`;
+                // FIXED DOUBLE STYLE TYPO HERE
+                document.getElementById(`bar-${user}`).style.height = `${Math.max(percentage, 0)}%`;
             });
         }
 
@@ -185,7 +186,6 @@
             `).join('');
         }
 
-        // NEW FEATURE: Fetch data live from the spreadsheet upon launch
         function fetchDataFromSheet() {
             if(!GOOGLE_SCRIPT_URL) return;
             
@@ -194,7 +194,6 @@
             fetch(GOOGLE_SCRIPT_URL)
                 .then(response => response.json())
                 .then(data => {
-                    // Reset local stats
                     dailyData = { Anthony: 0, Nick: 0, Chris: 0 };
                     localLogs = [];
                     
@@ -203,7 +202,6 @@
                     data.forEach(item => {
                         const entryDate = new Date(item.timestamp);
                         
-                        // Only add to dashboard charts if the log entry is from today
                         if(entryDate.toDateString() === todayStr) {
                             if(dailyData.hasOwnProperty(item.name)) {
                                 dailyData[item.name] += item.reps;
@@ -230,7 +228,6 @@
 
             if (repsToLog === 0) return;
 
-            // Update UI Instantly
             dailyData[selectedUser] += repsToLog;
             const timeString = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             localLogs.unshift({ name: selectedUser, reps: repsToLog, time: timeString });
@@ -241,7 +238,6 @@
             currentCounter = 0;
             updateCounterDisplay();
 
-            // Sync background
             if(GOOGLE_SCRIPT_URL) {
                 const btn = document.getElementById('submit-btn');
                 btn.disabled = true;
@@ -263,7 +259,6 @@
             }
         }
 
-        // Initialize by pull data from sheet right away
         fetchDataFromSheet();
     </script>
 </body>
