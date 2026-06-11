@@ -1,15 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>REP MATRIX</title>
     
     <link rel="icon" type="image/svg+xml" href="icon-light.svg" media="(prefers-color-scheme: light)">
-    <link rel="apple-touch-icon" href="icon-light.svg" media="(prefers-color-scheme: light)">
-
     <link rel="icon" type="image/svg+xml" href="icon-dark.svg" media="(prefers-color-scheme: dark)">
-    <link rel="apple-touch-icon" href="icon-dark.svg" media="(prefers-color-scheme: dark)">
+
+    <link rel="apple-touch-icon" href="icon-dark.png">
+
+    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22Pushup%20Tracker%22,%22short_name%22:%22Pushups%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22#121212%22,%22theme_color%22:%22#121212%22,%22icons%22:[{%22src%22:%22icon-dark.png%22,%22sizes%22:%22512x512%22,%22type%22:%22image/png%22}]}">
     
     <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22Pushup%20Tracker%22,%22short_name%22:%22Pushups%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22background_color%22:%22#121212%22,%22theme_color%22:%22#121212%22}">
     <style>
@@ -62,7 +63,6 @@
         .input-title { font-size: 14px; font-weight: 800; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px; }
         .user-select { background: #2d2d2d; color: white; border: 1px solid #333; padding: 5px 10px; border-radius: 6px; font-weight: 700; font-size: 13px; color-scheme: dark; }
         
-        /* Layout Tuning: Matrix Grid Framework */
         .counter-grid { display: grid; grid-template-columns: 1fr 1.2fr 1fr; gap: 10px; align-items: stretch; }
         .counter-display { text-align: center; display: flex; flex-direction: column; justify-content: center; }
         .counter-number { font-size: 42px; font-weight: 800; line-height: 1; color: #fff; }
@@ -73,7 +73,6 @@
         .btn:active { background: #3d3d3d; }
         .btn span { font-size: 9px; color: #777; font-weight: 600; margin-top: 1px; }
         
-        /* Negative column uses flex mapping to scale 2 taller buttons to equal the 3 positive buttons */
         .btn-neg { background: #262626; border-color: #333; }
         
         .manual-input-box { background: #121212; border: 1px solid #333; border-radius: 6px; padding: 6px; width: 100%; text-align: center; color: white; font-size: 14px; margin-top: 5px; }
@@ -182,14 +181,16 @@
 
         function adjustCounter(amount) {
             currentCounter += amount;
-            if (currentCounter < 0) currentCounter = 0;
             updateCounterDisplay();
         }
 
         function syncManualInput(val) {
-            if(val === "") return;
+            if(val === "") {
+                currentCounter = 0;
+                document.getElementById('counter-val').innerText = currentCounter;
+                return;
+            }
             currentCounter = parseInt(val) || 0;
-            if (currentCounter < 0) currentCounter = 0;
             document.getElementById('counter-val').innerText = currentCounter;
         }
 
@@ -237,8 +238,13 @@
 
             ['Anthony', 'Nick', 'Chris'].forEach(user => {
                 const logs = userHistoricalMap[user];
-                const hitToday = (logs[todayStr] || 0) >= GOAL;
-                const hitYesterday = (logs[yesterdayStr] || 0) >= GOAL;
+                
+                // Enforced protection floor here as well so historical math won't break streaks
+                const todayTotal = Math.max(logs[todayStr] || 0, 0);
+                const yesterdayTotal = Math.max(logs[yesterdayStr] || 0, 0);
+                
+                const hitToday = todayTotal >= GOAL;
+                const hitYesterday = yesterdayTotal >= GOAL;
                 
                 if (!hitToday && !hitYesterday) {
                     userStreaks[user] = 0;
@@ -250,7 +256,7 @@
                 
                 while(true) {
                     const cursorStr = cursor.toDateString();
-                    const dayVolume = logs[cursorStr] || 0;
+                    const dayVolume = Math.max(logs[cursorStr] || 0, 0);
                     
                     if (dayVolume >= GOAL) {
                         streakCount++;
@@ -301,9 +307,12 @@
             });
 
             ['Anthony', 'Nick', 'Chris'].forEach(user => {
-                const total = dailyData[user];
-                document.getElementById(`count-${user}`).innerText = total;
-                const percentage = Math.min((total / GOAL) * 100, 100);
+                // Safeguard: daily total display value will never fall below 0
+                const rawTotal = dailyData[user];
+                const cleanTotal = Math.max(rawTotal, 0);
+                
+                document.getElementById(`count-${user}`).innerText = cleanTotal;
+                const percentage = Math.min((cleanTotal / GOAL) * 100, 100);
                 document.getElementById(`bar-${user}`).style.height = `${Math.max(percentage, 0)}%`;
             });
 
@@ -319,24 +328,29 @@
                 `).join('');
             }
 
-            const anthonyPct = Math.min((monthlyTotals.Anthony / MONTHLY_BENCHMARK) * 100, 100);
-            const nickPct = Math.min((monthlyTotals.Nick / MONTHLY_BENCHMARK) * 100, 100);
-            const chrisPct = Math.min((monthlyTotals.Chris / MONTHLY_BENCHMARK) * 100, 100);
+            // Safeguard: monthly totals will also floor at 0
+            const cleanAnthonyMonth = Math.max(monthlyTotals.Anthony, 0);
+            const cleanNickMonth = Math.max(monthlyTotals.Nick, 0);
+            const cleanChrisMonth = Math.max(monthlyTotals.Chris, 0);
+
+            const anthonyPct = Math.min((cleanAnthonyMonth / MONTHLY_BENCHMARK) * 100, 100);
+            const nickPct = Math.min((cleanNickMonth / MONTHLY_BENCHMARK) * 100, 100);
+            const chrisPct = Math.min((cleanChrisMonth / MONTHLY_BENCHMARK) * 100, 100);
 
             const monthLabel = currentViewObj.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
             document.getElementById('trends-content').innerHTML = `
                 <div style="font-weight: 700; margin-bottom: 12px; color: #4cd964; border-bottom: 1px solid #262626; padding-bottom: 6px; font-size:12px;">${monthLabel.toUpperCase()} TOTAL VOLUME</div>
                 <div style="display: flex; flex-direction: column; gap: 14px;">
                     <div class="trend-row">
-                        <div class="trend-meta"><span>Anthony</span><strong>${monthlyTotals.Anthony} reps</strong></div>
+                        <div class="trend-meta"><span>Anthony</span><strong>${cleanAnthonyMonth} reps</strong></div>
                         <div class="trend-bar-outer"><div class="trend-bar-inner" style="width: ${anthonyPct}%"></div></div>
                     </div>
                     <div class="trend-row">
-                        <div class="trend-meta"><span>Nick</span><strong>${monthlyTotals.Nick} reps</strong></div>
+                        <div class="trend-meta"><span>Nick</span><strong>${cleanNickMonth} reps</strong></div>
                         <div class="trend-bar-outer"><div class="trend-bar-inner" style="width: ${nickPct}%"></div></div>
                     </div>
                     <div class="trend-row">
-                        <div class="trend-meta"><span>Chris</span><strong>${monthlyTotals.Chris} reps</strong></div>
+                        <div class="trend-meta"><span>Chris</span><strong>${cleanChrisMonth} reps</strong></div>
                         <div class="trend-bar-outer"><div class="trend-bar-inner" style="width: ${chrisPct}%"></div></div>
                     </div>
                 </div>
