@@ -177,9 +177,106 @@
         .manual-input-box { background: #121212; border: 1px solid #333; border-radius: 6px; padding: 6px; width: 100%; text-align: center; color: white; font-size: 14px; margin-top: 5px; }
         .submit-btn { background: #ffffff; color: #000000; border: none; border-radius: 8px; padding: 14px; font-weight: 900; font-size: 16px; letter-spacing: 1.5px; text-transform: uppercase; text-align: center; width: 100%; margin-top: 5px; cursor: pointer; box-shadow: 0 4px 12px rgba(255,255,255,0.1); }
         .submit-btn:disabled { background: #444; color: #888; box-shadow: none; }
+
+        /* ── ANIMATION OVERLAY ── */
+        #anim-overlay {
+            position: fixed; inset: 0; z-index: 999;
+            pointer-events: none; overflow: hidden;
+        }
+
+        /* CONFETTI */
+        .confetti-piece {
+            position: absolute;
+            width: 10px; height: 10px;
+            top: -20px;
+            opacity: 0;
+            animation: confettiFall linear forwards;
+        }
+        @keyframes confettiFall {
+            0%   { opacity: 1; transform: translateY(0) rotate(0deg) scale(1); }
+            80%  { opacity: 1; }
+            100% { opacity: 0; transform: translateY(110vh) rotate(720deg) scale(0.5); }
+        }
+
+        /* FLAME BURST */
+        .flame-particle {
+            position: absolute;
+            border-radius: 50% 50% 20% 20%;
+            opacity: 0;
+            animation: flameBurst ease-out forwards;
+        }
+        @keyframes flameBurst {
+            0%   { opacity: 1; transform: translate(var(--fx), var(--fy)) scale(0.3); }
+            40%  { opacity: 1; transform: translate(var(--tx), var(--ty)) scale(1.2); }
+            100% { opacity: 0; transform: translate(var(--tx2), var(--ty2)) scale(0); }
+        }
+
+        /* FIREWORKS */
+        .firework-shell {
+            position: absolute;
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            opacity: 0;
+            animation: shellRise ease-out forwards;
+        }
+        @keyframes shellRise {
+            0%   { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(var(--rise)) scale(0.2); }
+        }
+        .firework-spark {
+            position: absolute;
+            width: 4px; height: 4px;
+            border-radius: 50%;
+            opacity: 0;
+            animation: sparkFly ease-out forwards;
+        }
+        @keyframes sparkFly {
+            0%   { opacity: 1; transform: translate(0,0) scale(1); }
+            100% { opacity: 0; transform: translate(var(--sx), var(--sy)) scale(0); }
+        }
+
+        /* LASER SHOW */
+        .laser-beam {
+            position: absolute;
+            height: 2px;
+            opacity: 0;
+            transform-origin: left center;
+            animation: laserSweep ease-in-out forwards;
+            border-radius: 2px;
+        }
+        @keyframes laserSweep {
+            0%   { opacity: 0; transform: scaleX(0) rotate(var(--angle)); }
+            20%  { opacity: 1; transform: scaleX(1) rotate(var(--angle)); }
+            70%  { opacity: 1; transform: scaleX(1) rotate(calc(var(--angle) + var(--sweep))); }
+            100% { opacity: 0; transform: scaleX(0.8) rotate(calc(var(--angle) + var(--sweep))); }
+        }
+        .laser-core {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0;
+            animation: laserCore ease-in-out forwards;
+        }
+        @keyframes laserCore {
+            0%,100% { opacity: 0; transform: scale(0); }
+            30%,70% { opacity: 1; transform: scale(1); }
+        }
+
+        /* FLASH */
+        .screen-flash {
+            position: fixed; inset: 0; z-index: 998;
+            pointer-events: none;
+            opacity: 0;
+            animation: screenFlash ease-out forwards;
+        }
+        @keyframes screenFlash {
+            0%  { opacity: 0.7; }
+            100%{ opacity: 0; }
+        }
     </style>
 </head>
 <body>
+
+    <div id="anim-overlay"></div>
 
     <div class="header">
         <h1>REP MATRIX</h1>
@@ -196,7 +293,7 @@
     <div class="main-content">
         <div class="card">
             <div class="card-header-row">
-                <div class="card-title">GAINS</div>
+                <div class="card-title">Gains</div>
                 <div class="status-container">
                     <div class="loading-status" id="load-status">Syncing...</div>
                     <button class="refresh-btn" onclick="fetchDataFromSheet()" title="Force Refresh">🔄</button>
@@ -519,10 +616,23 @@
             const reps = currentCounter;
             if (reps === 0) return;
 
+            // Capture total BEFORE adding new reps
+            const today = new Date().toDateString();
+            const prevTotal = masterSheetData
+                .filter(e => e.name === user && new Date(e.timestamp).toDateString() === today)
+                .reduce((sum, e) => sum + e.reps, 0);
+
             const timestamp = new Date().toISOString();
             masterSheetData.unshift({ name: user, reps, timestamp });
 
             processAndRenderData();
+
+            // Capture total AFTER and current streak
+            const newTotal = prevTotal + reps;
+            const streakEl = document.getElementById(`streak-${user}`);
+            const streakCount = streakEl ? parseInt(streakEl.innerText.replace('🔥','').trim()) || 0 : 0;
+            checkAndTriggerAnimations(user, prevTotal, newTotal, streakCount);
+
             currentCounter = 0;
             updateCounterDisplay();
 
@@ -542,6 +652,260 @@
                 document.getElementById('load-status').innerText = "Sync Error";
             });
         }
+
+        // ── ANIMATION ENGINE ──────────────────────────────────────────
+
+        function clearOverlay() {
+            document.getElementById('anim-overlay').innerHTML = '';
+        }
+
+        // Track which milestones have fired today per user so we don't repeat
+        let firedGoalToday = {};
+        let firedDoubleToday = {};
+        let firedStreakMilestones = {};
+
+        function resetDailyAnimFlags() {
+            firedGoalToday = {};
+            firedDoubleToday = {};
+        }
+
+        // CONFETTI — fires when user first hits 100 reps today
+        function triggerConfetti() {
+            const overlay = document.getElementById('anim-overlay');
+            const colors = ['#ff3b3b','#ff9500','#ffcc00','#4cd964','#007aff','#af52de','#ff2d55','#00d2ff','#ffffff'];
+            const shapes = ['circle','rect','triangle'];
+            const count = 120;
+            const frags = [];
+            for (let i = 0; i < count; i++) {
+                const el = document.createElement('div');
+                el.className = 'confetti-piece';
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                const shape = shapes[Math.floor(Math.random() * shapes.length)];
+                const size = 6 + Math.random() * 10;
+                const left = Math.random() * 100;
+                const duration = 1.8 + Math.random() * 2;
+                const delay = Math.random() * 0.6;
+                el.style.cssText = `
+                    left:${left}%; width:${size}px; height:${size}px;
+                    background:${shape !== 'triangle' ? color : 'transparent'};
+                    border-radius:${shape === 'circle' ? '50%' : shape === 'rect' ? '2px' : '0'};
+                    border-left:${shape === 'triangle' ? `${size/2}px solid transparent` : 'none'};
+                    border-right:${shape === 'triangle' ? `${size/2}px solid transparent` : 'none'};
+                    border-bottom:${shape === 'triangle' ? `${size}px solid ${color}` : 'none'};
+                    animation-duration:${duration}s; animation-delay:${delay}s;
+                `;
+                frags.push(el);
+            }
+            frags.forEach(f => overlay.appendChild(f));
+
+            // Flash
+            const flash = document.createElement('div');
+            flash.className = 'screen-flash';
+            flash.style.background = 'rgba(255,255,255,0.15)';
+            flash.style.animationDuration = '0.4s';
+            overlay.appendChild(flash);
+
+            setTimeout(clearOverlay, 3500);
+        }
+
+        // FLAME BURST — fires when submitting reps while already over goal
+        function triggerFlameBurst() {
+            const overlay = document.getElementById('anim-overlay');
+            const W = window.innerWidth, H = window.innerHeight;
+            const cx = W / 2, cy = H / 2;
+            const count = 60;
+
+            for (let i = 0; i < count; i++) {
+                const el = document.createElement('div');
+                el.className = 'flame-particle';
+                const angle = (Math.PI * 2 / count) * i + (Math.random() - 0.5) * 0.4;
+                const dist = 80 + Math.random() * 180;
+                const dist2 = dist + 60 + Math.random() * 80;
+                const size = 12 + Math.random() * 28;
+                const colors = ['#ff4500','#ff6a00','#ff9500','#ffcc00','#fff200'];
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                const dur = 0.6 + Math.random() * 0.5;
+                const delay = Math.random() * 0.2;
+
+                const tx = Math.cos(angle) * dist, ty = Math.sin(angle) * dist;
+                const tx2 = Math.cos(angle) * dist2, ty2 = Math.sin(angle) * dist2;
+
+                el.style.cssText = `
+                    left:${cx}px; top:${cy}px;
+                    width:${size}px; height:${size * 1.4}px;
+                    background:radial-gradient(ellipse at 50% 80%, ${color}, transparent);
+                    --fx:0px; --fy:0px;
+                    --tx:${tx}px; --ty:${ty}px;
+                    --tx2:${tx2}px; --ty2:${ty2}px;
+                    animation-duration:${dur}s; animation-delay:${delay}s;
+                    transform-origin: center bottom;
+                `;
+                overlay.appendChild(el);
+            }
+
+            // Orange flash
+            const flash = document.createElement('div');
+            flash.className = 'screen-flash';
+            flash.style.background = 'rgba(255,100,0,0.25)';
+            flash.style.animationDuration = '0.5s';
+            overlay.appendChild(flash);
+
+            setTimeout(clearOverlay, 1200);
+        }
+
+        // FIREWORKS — fires when user hits 200 reps (200% goal)
+        function triggerFireworks() {
+            const overlay = document.getElementById('anim-overlay');
+            const W = window.innerWidth, H = window.innerHeight;
+            const burstCount = 8;
+            const colors = ['#ff3b3b','#ffcc00','#4cd964','#007aff','#af52de','#ff9500','#00d2ff','#ff2d55'];
+
+            for (let b = 0; b < burstCount; b++) {
+                const delay = b * 0.18;
+                const bx = W * (0.1 + Math.random() * 0.8);
+                const by = H * (0.1 + Math.random() * 0.6);
+                const color = colors[b % colors.length];
+                const sparkCount = 22;
+
+                // shell
+                const shell = document.createElement('div');
+                shell.className = 'firework-shell';
+                shell.style.cssText = `left:${bx}px; top:${H * 0.85}px; background:${color};
+                    --rise:${-(H * 0.85 - by)}px;
+                    animation-duration:0.5s; animation-delay:${delay}s;`;
+                overlay.appendChild(shell);
+
+                // sparks
+                for (let s = 0; s < sparkCount; s++) {
+                    const spark = document.createElement('div');
+                    spark.className = 'firework-spark';
+                    const angle = (Math.PI * 2 / sparkCount) * s;
+                    const dist = 60 + Math.random() * 80;
+                    spark.style.cssText = `
+                        left:${bx}px; top:${by}px; background:${color};
+                        --sx:${Math.cos(angle)*dist}px; --sy:${Math.sin(angle)*dist}px;
+                        animation-duration:${0.6 + Math.random()*0.4}s;
+                        animation-delay:${delay + 0.45}s;
+                        box-shadow: 0 0 4px ${color};
+                    `;
+                    overlay.appendChild(spark);
+                }
+            }
+
+            // Bright flash
+            const flash = document.createElement('div');
+            flash.className = 'screen-flash';
+            flash.style.background = 'rgba(255,255,255,0.3)';
+            flash.style.animationDuration = '0.3s';
+            overlay.appendChild(flash);
+
+            setTimeout(clearOverlay, 3200);
+        }
+
+        // LASER SHOW — fires on 7, 14, 21... day streaks
+        function triggerLaserShow() {
+            const overlay = document.getElementById('anim-overlay');
+            const W = window.innerWidth, H = window.innerHeight;
+            const laserColors = ['#ff2d55','#007aff','#4cd964','#af52de','#00d2ff','#ffcc00','#ff9500','#ff3b3b'];
+            const origins = [
+                {x:0, y:H}, {x:W, y:H}, {x:0, y:H*0.5}, {x:W, y:H*0.5},
+                {x:W*0.5, y:H}, {x:0, y:H*0.2}, {x:W, y:H*0.2}, {x:W*0.3, y:H}
+            ];
+            const beamCount = 16;
+
+            for (let i = 0; i < beamCount; i++) {
+                const beam = document.createElement('div');
+                beam.className = 'laser-beam';
+                const origin = origins[i % origins.length];
+                const color = laserColors[i % laserColors.length];
+                const angle = -30 + (i / beamCount) * 120;
+                const sweep = -40 + Math.random() * 80;
+                const len = W * (0.6 + Math.random() * 0.8);
+                const delay = (i * 0.08) % 0.8;
+                const dur = 1.0 + Math.random() * 0.8;
+                beam.style.cssText = `
+                    left:${origin.x}px; top:${origin.y}px;
+                    width:${len}px;
+                    background:linear-gradient(90deg, ${color}, transparent);
+                    box-shadow: 0 0 8px ${color}, 0 0 20px ${color}88;
+                    --angle:${angle}deg; --sweep:${sweep}deg;
+                    animation-duration:${dur}s; animation-delay:${delay}s;
+                `;
+                overlay.appendChild(beam);
+            }
+
+            // Pulsing core orbs
+            const orbColors = ['#ff2d55','#007aff','#4cd964','#af52de','#00d2ff'];
+            for (let o = 0; o < 5; o++) {
+                const orb = document.createElement('div');
+                orb.className = 'laser-core';
+                const size = 20 + Math.random() * 40;
+                const color = orbColors[o];
+                orb.style.cssText = `
+                    left:${W * (0.1 + o * 0.2)}px; top:${H * (0.2 + Math.random() * 0.5)}px;
+                    width:${size}px; height:${size}px;
+                    background:${color};
+                    box-shadow: 0 0 20px ${color}, 0 0 60px ${color}88;
+                    animation-duration:${1.5 + Math.random()}s; animation-delay:${o * 0.1}s;
+                `;
+                overlay.appendChild(orb);
+            }
+
+            // Also fire fireworks on top of laser show
+            setTimeout(triggerFireworks, 200);
+
+            // Rapid color flashes
+            const flashColors = ['rgba(255,45,85,0.2)','rgba(0,122,255,0.2)','rgba(76,217,100,0.2)','rgba(175,82,222,0.2)'];
+            flashColors.forEach((fc, fi) => {
+                setTimeout(() => {
+                    const flash = document.createElement('div');
+                    flash.className = 'screen-flash';
+                    flash.style.background = fc;
+                    flash.style.animationDuration = '0.3s';
+                    overlay.appendChild(flash);
+                }, fi * 200);
+            });
+
+            setTimeout(clearOverlay, 4500);
+        }
+
+        // ── ANIMATION TRIGGER CHECKER (called after processAndRenderData) ──
+        function checkAndTriggerAnimations(user, prevTotal, newTotal, streakCount) {
+            const today = new Date().toDateString();
+
+            // Reset flags if it's a new day
+            if (!firedGoalToday._date || firedGoalToday._date !== today) {
+                firedGoalToday = { _date: today };
+                firedDoubleToday = { _date: today };
+            }
+
+            // Confetti — first time crossing 100
+            if (prevTotal < GOAL && newTotal >= GOAL && !firedGoalToday[user]) {
+                firedGoalToday[user] = true;
+                setTimeout(triggerConfetti, 300);
+            }
+
+            // Fireworks — first time crossing 200 today
+            if (prevTotal < GOAL * 2 && newTotal >= GOAL * 2 && !firedDoubleToday[user]) {
+                firedDoubleToday[user] = true;
+                setTimeout(triggerFireworks, 300);
+            }
+            // Flame burst — submitting while already above goal (but not crossing 200 this submit)
+            else if (prevTotal >= GOAL && newTotal < GOAL * 2) {
+                setTimeout(triggerFlameBurst, 200);
+            }
+
+            // Laser show — streak hits a multiple of 7
+            if (streakCount > 0 && streakCount % 7 === 0) {
+                const milestoneKey = `${user}_${streakCount}`;
+                if (!firedStreakMilestones[milestoneKey]) {
+                    firedStreakMilestones[milestoneKey] = true;
+                    setTimeout(triggerLaserShow, 400);
+                }
+            }
+        }
+
+        // ── END ANIMATION ENGINE ──────────────────────────────────────
 
         // Initialize
         fetchDataFromSheet();
