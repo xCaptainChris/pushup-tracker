@@ -43,7 +43,6 @@
             -webkit-user-select: none; 
             user-select: none; 
             gap: clamp(6px, 1.2dvh, 12px);
-            justify-content: flex-end;
         }
         
         /* ── HEADER ── */
@@ -100,17 +99,15 @@
 
         /* ── MAIN SCROLL AREA ── */
         .main-content { 
-            flex: 0 1 auto;
-            overflow-y: auto; 
-            -webkit-overflow-scrolling: touch; 
+            flex: 1;
             display: flex; 
             flex-direction: column; 
             gap: clamp(6px, 1dvh, 12px);
-            padding-bottom: 4px;
             min-height: 0;
+            position: relative;
         }
         
-        .card { background: #1a1a1a; border-radius: 12px; padding: clamp(10px, 1.8dvh, 15px); border: 1px solid #262626; position: relative; flex-shrink: 0; }
+        .card { background: #1a1a1a; border-radius: 12px; padding: clamp(10px, 1.8dvh, 15px); border: 1px solid #262626; position: relative; flex: 1; min-height: 0; }
         .card-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: clamp(6px, 1dvh, 10px); }
         .card-title { 
             font-size: clamp(13px, 2dvh, 16px); 
@@ -164,18 +161,48 @@
         .legend-item { display: flex; align-items: center; gap: 4px; }
         .dot { width: 8px; height: 8px; border-radius: 50%; }
 
-        .accordion { background: #1a1a1a; border-radius: 12px; border: 1px solid #262626; overflow: hidden; flex-shrink: 0; }
-        .accordion-header { padding: clamp(10px, 1.6dvh, 15px); display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: clamp(12px, 1.8dvh, 14px); color: #ddd; cursor: pointer; }
+        /* ── ACCORDIONS — overlay downward, don't push layout ── */
+        .accordion { 
+            background: #1a1a1a; 
+            border-radius: 12px; 
+            border: 1px solid #262626; 
+            flex-shrink: 0;
+            position: relative;
+            z-index: 1;
+        }
+        .accordion.open { z-index: 100; }
+        .accordion-header { 
+            padding: clamp(10px, 1.6dvh, 15px); 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            font-weight: 700; 
+            font-size: clamp(12px, 1.8dvh, 14px); 
+            color: #ddd; 
+            cursor: pointer;
+            border-radius: 12px;
+            position: relative;
+            z-index: 2;
+            background: #1a1a1a;
+        }
         .accordion-header::after { content: '▼'; font-size: 9px; color: #666; transition: transform 0.2s; }
         .accordion.open .accordion-header::after { transform: rotate(180deg); }
-        
         .accordion-content { 
-            display: none; 
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0; right: 0;
+            background: #1a1a1a;
+            border: 1px solid #262626;
+            border-top: none;
+            border-radius: 0 0 12px 12px;
             padding: 0 15px 15px 15px; 
-            max-height: 340px; 
+            max-height: 280px;
             overflow-y: auto; 
             font-size: 13px; 
-            color: #aaa; 
+            color: #aaa;
+            z-index: 99;
+            box-shadow: 0 12px 32px rgba(0,0,0,0.6);
         }
         .accordion.open .accordion-content { display: block; }
 
@@ -1025,10 +1052,48 @@
             checkMonthlyKing(monthlyTotals);
         }
 
+        function auditHistoricalBadges() {
+            // Silently check all past days and award any missed badges (no toast)
+            const auditedKey = 'rm_audited_v1';
+            const alreadyAudited = localStorage.getItem(auditedKey);
+            if (alreadyAudited) return; // only run once per device
+
+            const userDayMap = { Anthony: {}, Nick: {}, Chris: {} };
+            masterSheetData.forEach(item => {
+                if (!item.timestamp || !userDayMap[item.name]) return;
+                const dKey = new Date(item.timestamp).toDateString();
+                userDayMap[item.name][dKey] = (userDayMap[item.name][dKey] || 0) + item.reps;
+            });
+
+            ['Anthony','Nick','Chris'].forEach(user => {
+                const days = userDayMap[user] || {};
+                Object.entries(days).forEach(([dayStr, total]) => {
+                    if (total >= GOAL) {
+                        // Award century silently if not already in store
+                        const alreadyHas = (badgeStore[user] || []).some(b => b.id === 'century');
+                        if (!alreadyHas) {
+                            const ts = new Date(dayStr).getTime() || Date.now();
+                            badgeStore[user].push({ id: 'century', ts });
+                        }
+                    }
+                    if (total >= GOAL * 2) {
+                        const alreadyHas = (badgeStore[user] || []).some(b => b.id === 'double');
+                        if (!alreadyHas) {
+                            const ts = new Date(dayStr).getTime() || Date.now();
+                            badgeStore[user].push({ id: 'double', ts });
+                        }
+                    }
+                });
+            });
+
+            saveBadges();
+            renderBadgeStrips({});
+            localStorage.setItem(auditedKey, '1');
+        }
+
         function fetchDataFromSheet() {
             document.getElementById('load-status').innerText = "Syncing...";
 
-            // Render cached data instantly if available
             const cached = localStorage.getItem('rm_cache');
             if (cached && masterSheetData.length === 0) {
                 try {
@@ -1043,6 +1108,7 @@
                     masterSheetData = Array.isArray(data) ? data : [];
                     localStorage.setItem('rm_cache', JSON.stringify(masterSheetData));
                     processAndRenderData();
+                    auditHistoricalBadges();
                     document.getElementById('load-status').innerText = "Online";
                     flushQueue();
                 })
