@@ -35,32 +35,45 @@
         body { 
             background-color: #121212; 
             color: #ffffff; 
-            padding: 15px; 
+            padding: clamp(8px, 2dvh, 15px);
             display: flex; 
             flex-direction: column; 
-            height: 100vh; 
-            height: -webkit-fill-available; 
+            height: 100dvh;
             overflow: hidden; 
             -webkit-user-select: none; 
             user-select: none; 
+            gap: clamp(6px, 1.2dvh, 12px);
         }
         
-        .header { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; margin-bottom: 12px; gap: 6px; }
-        .header h1 { font-size: 24px; font-weight: 900; letter-spacing: 2px; color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        /* ── HEADER ── */
+        .header { 
+            flex-shrink: 0; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            gap: clamp(3px, 0.6dvh, 6px);
+        }
+        .header h1 { 
+            font-size: clamp(16px, 3dvh, 24px); 
+            font-weight: 900; 
+            letter-spacing: 2px; 
+            color: #ffffff; 
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5); 
+        }
         
         .date-nav { display: flex; align-items: center; gap: 6px; }
         .date-badge { 
             background: #1a1a1a; 
-            padding: 8px 16px; 
+            padding: clamp(4px, 0.8dvh, 8px) 16px;
             border-radius: 20px; 
-            font-size: 13px; 
+            font-size: clamp(11px, 1.6dvh, 13px);
             color: #4cd964; 
             border: 1px solid #262626; 
             font-weight: 800; 
             cursor: pointer; 
             letter-spacing: 0.5px; 
             box-shadow: 0 2px 8px rgba(0,0,0,0.2); 
-            height: 36px;
+            height: clamp(28px, 4dvh, 36px);
             display: flex;
             align-items: center;
         }
@@ -68,12 +81,12 @@
             background: #1a1a1a; 
             border: 1px solid #262626; 
             color: #4cd964; 
-            font-size: 20px; 
+            font-size: clamp(16px, 2.4dvh, 20px);
             font-weight: 900; 
             cursor: pointer; 
-            padding: 0 12px; 
+            padding: 0 10px; 
             border-radius: 20px; 
-            height: 36px;
+            height: clamp(28px, 4dvh, 36px);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -84,30 +97,44 @@
         .date-badge-wrapper { position: relative; display: inline-block; min-width: 160px; text-align: center; }
         .hidden-date-picker { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
 
+        /* ── MAIN SCROLL AREA ── */
         .main-content { 
             flex: 1; 
             overflow-y: auto; 
             -webkit-overflow-scrolling: touch; 
             display: flex; 
             flex-direction: column; 
-            gap: 12px; 
-            padding-bottom: 10px;
+            gap: clamp(6px, 1dvh, 12px);
+            padding-bottom: 4px;
+            min-height: 0;
         }
         
-        .card { background: #1a1a1a; border-radius: 12px; padding: 15px; border: 1px solid #262626; position: relative; flex-shrink: 0; }
-        .card-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .card-title { font-size: 15px; font-weight: 700; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px; }
+        .card { background: #1a1a1a; border-radius: 12px; padding: clamp(10px, 1.8dvh, 15px); border: 1px solid #262626; position: relative; flex-shrink: 0; }
+        .card-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: clamp(6px, 1dvh, 10px); }
+        .card-title { font-size: clamp(12px, 1.8dvh, 15px); font-weight: 700; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px; }
         
         .status-container { display: flex; align-items: center; gap: 6px; background: #222; padding: 3px 8px; border-radius: 12px; border: 1px solid #333; }
         .loading-status { font-size: 10px; color: #007aff; font-weight: bold; }
         .refresh-btn { background: none; border: none; color: #aaa; cursor: pointer; font-size: 10px; }
 
-        .chart-container { display: flex; justify-content: space-around; align-items: flex-end; height: 175px; padding-top: 5px; position: relative; }
-        .bar-wrapper { display: flex; flex-direction: column; align-items: center; width: 32%; height: 100%; justify-content: flex-end; position: relative; }
+        .chart-container { 
+            display: flex; 
+            justify-content: space-around; 
+            align-items: flex-end; 
+            height: clamp(120px, 20dvh, 175px);
+            padding-top: 5px; 
+            position: relative; 
+        }
+        .bar-wrapper { display: flex; flex-direction: column; align-items: center; width: 32%; height: 100%; justify-content: flex-end; position: relative; cursor: pointer; }
         
-        .streak-badge { font-size: 11px; font-weight: 800; color: #ff9500; margin-bottom: 6px; background: rgba(255,149,0,0.1); padding: 2px 6px; border-radius: 8px; border: 1px solid rgba(255,149,0,0.2); }
+        .streak-badge { font-size: clamp(9px, 1.4dvh, 11px); font-weight: 800; color: #ff9500; margin-bottom: clamp(3px, 0.6dvh, 6px); background: rgba(255,149,0,0.1); padding: 2px 6px; border-radius: 8px; border: 1px solid rgba(255,149,0,0.2); }
         
-        .bar-outer { background: #2d2d2d; width: 42px; height: 110px; border-radius: 6px; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; position: relative; border: 1px solid #3a3a3a; }
+        .bar-outer { 
+            background: #2d2d2d; 
+            width: clamp(32px, 5vw, 42px);
+            height: clamp(70px, 13dvh, 110px);
+            border-radius: 6px; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; position: relative; border: 1px solid #3a3a3a; 
+        }
         
         .bar-layer { width: 100%; height: 0%; transition: height 0.6s cubic-bezier(0.1, 1, 0.1, 1), clip-path 0.6s cubic-bezier(0.1, 1, 0.1, 1); position: absolute; bottom: 0; left: 0; border-radius: 0 0 5px 5px; }
         .layer-base { background: #4cd964; z-index: 1; }
@@ -119,15 +146,15 @@
             100% { filter: brightness(1.2) contrast(1.1); opacity: 1; }
         }
 
-        .bar-label { margin-top: 8px; font-size: 13px; color: #eee; font-weight: 700; text-align: center; }
+        .bar-label { margin-top: clamp(4px, 0.8dvh, 8px); font-size: clamp(11px, 1.6dvh, 13px); color: #eee; font-weight: 700; text-align: center; }
         .bar-count { font-size: 11px; margin-bottom: 2px; position: absolute; width: 100%; text-align: center; bottom: 4px; font-weight: 900; color: #000; z-index: 10; }
 
-        .playground-legend { display: flex; justify-content: center; gap: 16px; font-size: 10px; font-weight: 700; margin: 4px 0 8px 0; }
+        .playground-legend { display: flex; justify-content: center; gap: 16px; font-size: 10px; font-weight: 700; margin: clamp(2px, 0.4dvh, 4px) 0 clamp(4px, 0.8dvh, 8px) 0; }
         .legend-item { display: flex; align-items: center; gap: 4px; }
         .dot { width: 8px; height: 8px; border-radius: 50%; }
 
         .accordion { background: #1a1a1a; border-radius: 12px; border: 1px solid #262626; overflow: hidden; flex-shrink: 0; }
-        .accordion-header { padding: 15px; display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 14px; color: #ddd; cursor: pointer; }
+        .accordion-header { padding: clamp(10px, 1.6dvh, 15px); display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: clamp(12px, 1.8dvh, 14px); color: #ddd; cursor: pointer; }
         .accordion-header::after { content: '▼'; font-size: 9px; color: #666; transition: transform 0.2s; }
         .accordion.open .accordion-header::after { transform: rotate(180deg); }
         
@@ -148,34 +175,45 @@
         .trend-bar-outer { background: #2d2d2d; height: 6px; width: 100%; border-radius: 3px; overflow: hidden; border: 1px solid #3a3a3a; }
         .trend-bar-inner { background: #4cd964; height: 100%; width: 0%; border-radius: 3px; transition: width 0.5s ease-out; }
 
+        /* ── INPUT PANEL ── */
         .input-panel { 
             background: #1a1a1a; 
             border-radius: 12px; 
-            padding: 15px; 
+            padding: clamp(8px, 1.4dvh, 15px);
             border: 1px solid #262626; 
             display: flex; 
             flex-direction: column; 
-            gap: 12px; 
+            gap: clamp(6px, 1dvh, 12px);
             box-shadow: 0 -4px 20px rgba(0,0,0,0.5); 
             flex-shrink: 0; 
         }
         .input-header { display: flex; justify-content: space-between; align-items: center; }
-        .input-title { font-size: 14px; font-weight: 800; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px; }
-        .user-select { background: #2d2d2d; color: white; border: 1px solid #333; padding: 5px 10px; border-radius: 6px; font-weight: 700; font-size: 13px; color-scheme: dark; }
+        .input-title { font-size: clamp(11px, 1.6dvh, 14px); font-weight: 800; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px; }
+        .user-select { background: #2d2d2d; color: white; border: 1px solid #333; padding: clamp(3px, 0.6dvh, 5px) 10px; border-radius: 6px; font-weight: 700; font-size: clamp(11px, 1.6dvh, 13px); color-scheme: dark; }
         
-        .counter-grid { display: grid; grid-template-columns: 1fr 1.2fr 1fr; gap: 10px; align-items: stretch; }
+        .counter-grid { display: grid; grid-template-columns: 1fr 1.2fr 1fr; gap: clamp(6px, 1dvh, 10px); align-items: stretch; }
         .counter-display { text-align: center; display: flex; flex-direction: column; justify-content: center; }
-        .counter-number { font-size: 42px; font-weight: 800; line-height: 1; color: #fff; }
+        .counter-number { font-size: clamp(28px, 5dvh, 42px); font-weight: 800; line-height: 1; color: #fff; }
         .counter-unit { font-size: 10px; color: #666; font-weight: 700; letter-spacing: 1px; margin-top: 2px; }
         
-        .btn-col { display: flex; flex-direction: column; gap: 8px; justify-content: space-between; }
-        .btn { background: #2d2d2d; color: white; border: 1px solid #3f3f3f; border-radius: 8px; padding: 12px; font-weight: 700; font-size: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; flex: 1; }
+        .btn-col { display: flex; flex-direction: column; gap: clamp(5px, 0.8dvh, 8px); justify-content: space-between; }
+        .btn { 
+            background: #2d2d2d; color: white; border: 1px solid #3f3f3f; border-radius: 8px; 
+            padding: clamp(7px, 1.2dvh, 12px) clamp(6px, 1dvh, 12px);
+            font-weight: 700; font-size: clamp(13px, 2dvh, 15px); 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; flex: 1;
+            min-height: 44px;
+        }
         .btn:active { background: #3d3d3d; }
         .btn span { font-size: 9px; color: #777; font-weight: 600; margin-top: 1px; }
         .btn-neg { background: #262626; border-color: #333; }
         
-        .manual-input-box { background: #121212; border: 1px solid #333; border-radius: 6px; padding: 6px; width: 100%; text-align: center; color: white; font-size: 14px; margin-top: 5px; }
-        .submit-btn { background: #ffffff; color: #000000; border: none; border-radius: 8px; padding: 14px; font-weight: 900; font-size: 16px; letter-spacing: 1.5px; text-transform: uppercase; text-align: center; width: 100%; margin-top: 5px; cursor: pointer; box-shadow: 0 4px 12px rgba(255,255,255,0.1); }
+        .manual-input-box { background: #121212; border: 1px solid #333; border-radius: 6px; padding: clamp(4px, 0.6dvh, 6px); width: 100%; text-align: center; color: white; font-size: clamp(12px, 1.8dvh, 14px); margin-top: 4px; }
+        .submit-btn { 
+            background: #ffffff; color: #000000; border: none; border-radius: 8px; 
+            padding: clamp(9px, 1.6dvh, 14px);
+            font-weight: 900; font-size: clamp(13px, 2dvh, 16px); letter-spacing: 1.5px; text-transform: uppercase; text-align: center; width: 100%; cursor: pointer; box-shadow: 0 4px 12px rgba(255,255,255,0.1); 
+        }
         .submit-btn:disabled { background: #444; color: #888; box-shadow: none; }
 
         /* ── ANIMATION OVERLAY ── */
@@ -277,7 +315,7 @@
             background: #1a1a1a;
             border-radius: 12px;
             border: 1px solid #262626;
-            padding: 10px 15px 12px 15px;
+            padding: clamp(6px, 1dvh, 10px) 15px clamp(8px, 1.2dvh, 12px) 15px;
             flex-shrink: 0;
         }
         .hof-title {
@@ -286,7 +324,7 @@
             color: #555;
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin-bottom: 8px;
+            margin-bottom: clamp(4px, 0.8dvh, 8px);
             text-align: center;
         }
         .hof-grid {
@@ -464,7 +502,7 @@
     <div class="main-content">
         <div class="card">
             <div class="card-header-row">
-                <div class="card-title">Dem Gains 'Do</div>
+                <div class="card-title">DAILY VOLUME</div>
                 <div class="status-container">
                     <div class="loading-status" id="load-status">Syncing...</div>
                     <span class="offline-badge" id="offline-badge">QUEUED</span>
