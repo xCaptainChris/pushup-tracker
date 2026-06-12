@@ -43,6 +43,7 @@
             -webkit-user-select: none; 
             user-select: none; 
             gap: clamp(6px, 1.2dvh, 12px);
+            justify-content: flex-end;
         }
         
         /* ── HEADER ── */
@@ -99,7 +100,7 @@
 
         /* ── MAIN SCROLL AREA ── */
         .main-content { 
-            flex: 1; 
+            flex: 0 1 auto;
             overflow-y: auto; 
             -webkit-overflow-scrolling: touch; 
             display: flex; 
@@ -111,7 +112,17 @@
         
         .card { background: #1a1a1a; border-radius: 12px; padding: clamp(10px, 1.8dvh, 15px); border: 1px solid #262626; position: relative; flex-shrink: 0; }
         .card-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: clamp(6px, 1dvh, 10px); }
-        .card-title { font-size: clamp(12px, 1.8dvh, 15px); font-weight: 700; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px; }
+        .card-title { 
+            font-size: clamp(13px, 2dvh, 16px); 
+            font-weight: 900; 
+            text-transform: uppercase; 
+            letter-spacing: 2px;
+            background: linear-gradient(90deg, #4cd964, #00d2ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 6px rgba(76,217,100,0.5));
+        }
         
         .status-container { display: flex; align-items: center; gap: 6px; background: #222; padding: 3px 8px; border-radius: 12px; border: 1px solid #333; }
         .loading-status { font-size: 10px; color: #007aff; font-weight: bold; }
@@ -310,124 +321,100 @@
             0%  { opacity: 0.7; }
             100%{ opacity: 0; }
         }
-        /* ── HALL OF FAME ── */
-        .hof-panel {
-            background: #1a1a1a;
-            border-radius: 12px;
-            border: 1px solid #262626;
-            padding: clamp(6px, 1dvh, 10px) 15px clamp(8px, 1.2dvh, 12px) 15px;
-            flex-shrink: 0;
-        }
-        .hof-title {
-            font-size: 10px;
-            font-weight: 800;
-            color: #555;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: clamp(4px, 0.8dvh, 8px);
-            text-align: center;
-        }
-        .hof-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 6px;
-        }
-        .hof-col {
+        /* ── BADGE STRIP (under bar names) ── */
+        .bar-badges {
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            min-width: 0;
-        }
-        .hof-name {
-            font-size: 10px;
-            font-weight: 800;
-            color: #aaa;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            cursor: pointer;
-            padding: 2px 6px;
-            border-radius: 8px;
-            border: 1px solid transparent;
-            transition: all 0.2s;
-            white-space: nowrap;
-        }
-        .hof-name:active { background: #2d2d2d; }
-        .hof-name.expanded {
-            color: #4cd964;
-            border-color: #4cd964;
-            background: rgba(76,217,100,0.08);
-        }
-        /* Collapsed: show first 3 badges, hide rest */
-        .hof-badges-wrap {
-            width: 100%;
-            overflow: hidden;
-            min-height: 22px;
-            display: flex;
+            flex-direction: row;
             justify-content: center;
-        }
-        .hof-badges {
-            display: flex;
-            flex-wrap: nowrap;
             gap: 1px;
-            transition: none;
+            margin-top: 4px;
+            min-height: 18px;
+            cursor: pointer;
         }
-        /* Expanded drawer — spans full width below grid */
-        .hof-expand-drawer {
-            display: none;
-            width: 100%;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            background: #141414;
-            border-radius: 8px;
-            border: 1px solid #2a2a2a;
-            padding: 8px 10px;
-            margin-top: 8px;
-            flex-shrink: 0;
-        }
-        .hof-expand-drawer.open { display: block; }
-        .hof-expand-inner {
-            display: flex;
-            flex-wrap: nowrap;
-            gap: 4px;
-            align-items: center;
-        }
-        .hof-expand-header {
-            font-size: 9px;
-            font-weight: 800;
-            color: #4cd964;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 6px;
-        }
-        .hof-badge {
-            font-size: 18px;
+        .bar-badge-icon {
+            font-size: 13px;
             line-height: 1;
             flex-shrink: 0;
         }
-        .hof-badge-item {
+        .bar-badge-more {
+            font-size: 8px;
+            color: #555;
+            font-weight: 900;
+            align-self: center;
+            margin-left: 1px;
+        }
+        .bar-king {
+            font-size: 10px;
+            color: #ffcc00;
+            margin-top: 1px;
+        }
+
+        /* ── BADGE MODAL ── */
+        .badge-modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 500;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            animation: backdropIn 0.2s ease-out forwards;
+        }
+        @keyframes backdropIn {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
+        .badge-modal {
+            background: #1a1a1a;
+            border: 1px solid #2d2d2d;
+            border-radius: 20px 20px 0 0;
+            padding: 16px 20px 32px 20px;
+            width: 100%;
+            max-width: 480px;
+            animation: modalUp 0.25s cubic-bezier(0.2, 1, 0.3, 1) forwards;
+        }
+        @keyframes modalUp {
+            from { transform: translateY(100%); }
+            to   { transform: translateY(0); }
+        }
+        .badge-modal-handle {
+            width: 36px; height: 4px;
+            background: #333;
+            border-radius: 2px;
+            margin: 0 auto 14px auto;
+        }
+        .badge-modal-title {
+            font-size: 13px;
+            font-weight: 900;
+            color: #4cd964;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 14px;
+            text-align: center;
+        }
+        .badge-modal-scroll {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 4px;
+        }
+        .badge-modal-row {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 10px;
+            padding: 2px 0;
+        }
+        .badge-modal-item {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 2px;
+            gap: 3px;
             flex-shrink: 0;
+            min-width: 44px;
         }
-        .hof-badge-label {
-            font-size: 8px;
-            color: #555;
-            font-weight: 700;
-            white-space: nowrap;
-        }
-        .hof-empty {
-            font-size: 11px;
-            color: #333;
-        }
-        /* Monthly king crown indicator */
-        .hof-king-indicator {
-            font-size: 10px;
-            color: #ffcc00;
-            font-weight: 900;
-        }
+        .badge-modal-icon { font-size: 26px; line-height: 1; }
+        .badge-modal-label { font-size: 8px; color: #aaa; font-weight: 700; text-align: center; white-space: nowrap; }
+        .badge-modal-date  { font-size: 7px; color: #444; font-weight: 600; }
+        .badge-modal-empty { color: #444; font-size: 12px; text-align: center; padding: 10px 0; width: 100%; }
 
         /* ── BADGE TOAST ── */
         .badge-toast {
@@ -502,7 +489,7 @@
     <div class="main-content">
         <div class="card">
             <div class="card-header-row">
-                <div class="card-title">DAILY VOLUME</div>
+                <div class="card-title">GAINS</div>
                 <div class="status-container">
                     <div class="loading-status" id="load-status">Syncing...</div>
                     <span class="offline-badge" id="offline-badge">QUEUED</span>
@@ -525,7 +512,8 @@
                         <div class="bar-layer layer-backfill" id="bar-backfill-Anthony"></div>
                         <div class="bar-layer layer-flame" id="bar-flame-Anthony"></div>
                     </div>
-                    <div class="bar-label">Anthony</div>
+                    <div class="bar-label" id="bar-label-Anthony">Anthony</div>
+                    <div class="bar-badges" id="bar-badges-Anthony" onclick="event.stopPropagation(); openBadgeModal('Anthony')"></div>
                 </div>
                 <div class="bar-wrapper" id="wrap-Nick" onclick="selectUser('Nick')">
                     <div class="streak-badge" id="streak-Nick">🔥 0</div>
@@ -535,7 +523,8 @@
                         <div class="bar-layer layer-backfill" id="bar-backfill-Nick"></div>
                         <div class="bar-layer layer-flame" id="bar-flame-Nick"></div>
                     </div>
-                    <div class="bar-label">Nick</div>
+                    <div class="bar-label" id="bar-label-Nick">Nick</div>
+                    <div class="bar-badges" id="bar-badges-Nick" onclick="event.stopPropagation(); openBadgeModal('Nick')"></div>
                 </div>
                 <div class="bar-wrapper" id="wrap-Chris" onclick="selectUser('Chris')">
                     <div class="streak-badge" id="streak-Chris">🔥 0</div>
@@ -545,7 +534,8 @@
                         <div class="bar-layer layer-backfill" id="bar-backfill-Chris"></div>
                         <div class="bar-layer layer-flame" id="bar-flame-Chris"></div>
                     </div>
-                    <div class="bar-label">Chris</div>
+                    <div class="bar-label" id="bar-label-Chris">Chris</div>
+                    <div class="bar-badges" id="bar-badges-Chris" onclick="event.stopPropagation(); openBadgeModal('Chris')"></div>
                 </div>
             </div>
         </div>
@@ -562,28 +552,6 @@
             <div class="accordion-content" id="trends-content">
                 <div style="text-align:center; padding:10px; color:#555;">Processing data...</div>
             </div>
-        </div>
-    </div>
-
-    <div class="hof-panel">
-        <div class="hof-title">🏆 Hall of Fame</div>
-        <div class="hof-grid">
-            <div class="hof-col">
-                <div class="hof-name" id="hof-name-Anthony" onclick="toggleHofExpand('Anthony')">Anthony</div>
-                <div class="hof-badges-wrap"><div class="hof-badges" id="hof-Anthony"><span class="hof-empty">—</span></div></div>
-            </div>
-            <div class="hof-col">
-                <div class="hof-name" id="hof-name-Nick" onclick="toggleHofExpand('Nick')">Nick</div>
-                <div class="hof-badges-wrap"><div class="hof-badges" id="hof-Nick"><span class="hof-empty">—</span></div></div>
-            </div>
-            <div class="hof-col">
-                <div class="hof-name" id="hof-name-Chris" onclick="toggleHofExpand('Chris')">Chris</div>
-                <div class="hof-badges-wrap"><div class="hof-badges" id="hof-Chris"><span class="hof-empty">—</span></div></div>
-            </div>
-        </div>
-        <div class="hof-expand-drawer" id="hof-drawer">
-            <div class="hof-expand-header" id="hof-drawer-title">All Badges</div>
-            <div class="hof-expand-inner" id="hof-drawer-content"></div>
         </div>
     </div>
 
@@ -729,49 +697,7 @@
             showBadgeToast(user, badgeId);
         }
 
-        let hofExpandedUser = null;
-
-        function toggleHofExpand(user) {
-            const drawer = document.getElementById('hof-drawer');
-            const drawerContent = document.getElementById('hof-drawer-content');
-            const drawerTitle = document.getElementById('hof-drawer-title');
-
-            // Deselect all name labels
-            ['Anthony','Nick','Chris'].forEach(u => {
-                document.getElementById(`hof-name-${u}`).classList.remove('expanded');
-            });
-
-            if (hofExpandedUser === user) {
-                // Collapse
-                hofExpandedUser = null;
-                drawer.classList.remove('open');
-                return;
-            }
-
-            hofExpandedUser = user;
-            document.getElementById(`hof-name-${user}`).classList.add('expanded');
-            drawer.classList.add('open');
-            drawerTitle.innerText = `${user}'s Badges`;
-
-            const badges = badgeStore[user] || [];
-            if (badges.length === 0) {
-                drawerContent.innerHTML = '<span style="color:#555; font-size:12px;">No badges yet — get to work! 💪</span>';
-                return;
-            }
-
-            drawerContent.innerHTML = badges.map(b => {
-                const def = BADGE_DEFS[b.id];
-                if (!def) return '';
-                const date = new Date(b.ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                return `<div class="hof-badge-item" title="${def.desc}">
-                    <span class="hof-badge">${def.icon}</span>
-                    <span class="hof-badge-label">${def.label}</span>
-                    <span class="hof-badge-label" style="color:#3a3a3a">${date}</span>
-                </div>`;
-            }).join('');
-        }
-
-        function renderHallOfFame(monthlyTotals) {
+        function renderBadgeStrips(monthlyTotals) {
             // Determine live monthly king
             let kingUser = null;
             if (monthlyTotals) {
@@ -783,37 +709,78 @@
             }
 
             ['Anthony','Nick','Chris'].forEach(user => {
-                const el = document.getElementById(`hof-${user}`);
+                const strip = document.getElementById(`bar-badges-${user}`);
+                const label = document.getElementById(`bar-label-${user}`);
                 const badges = badgeStore[user] || [];
-                const nameEl = document.getElementById(`hof-name-${user}`);
-
-                // Update live king indicator in name
                 const isKing = user === kingUser;
-                nameEl.innerHTML = isKing ? `${user} 👑` : user;
+
+                // Name label with optional king crown
+                label.innerHTML = isKing ? `${user} <span class="bar-king">👑</span>` : user;
 
                 if (badges.length === 0) {
-                    el.innerHTML = '<span class="hof-empty">—</span>';
+                    strip.innerHTML = '';
+                    strip.style.minHeight = '0';
                     return;
                 }
 
-                // Show first 3, fade 4th as hint there's more
+                strip.style.minHeight = '18px';
                 const preview = badges.slice(0, 4);
-                el.innerHTML = preview.map((b, i) => {
+                let html = preview.map((b, i) => {
                     const def = BADGE_DEFS[b.id];
                     if (!def) return '';
-                    const faded = i === 3 && badges.length > 3 ? 'opacity:0.35' : '';
-                    return `<span class="hof-badge" style="${faded}" title="${def.label}">${def.icon}</span>`;
+                    const fade = i === 3 && badges.length > 4 ? 'opacity:0.3' : '';
+                    return `<span class="bar-badge-icon" style="${fade}">${def.icon}</span>`;
                 }).join('');
 
-                // If more than 4, append count hint
                 if (badges.length > 4) {
-                    el.innerHTML += `<span style="font-size:9px;color:#555;font-weight:800;align-self:center">+${badges.length - 3}</span>`;
+                    html += `<span class="bar-badge-more">+${badges.length - 3}</span>`;
                 }
-
-                // Re-render drawer if this user is expanded
-                if (hofExpandedUser === user) toggleHofExpand(user); // close
-                // (don't re-open — let user re-tap)
+                strip.innerHTML = html;
             });
+        }
+
+        function openBadgeModal(user) {
+            const badges = badgeStore[user] || [];
+            const backdrop = document.createElement('div');
+            backdrop.className = 'badge-modal-backdrop';
+            backdrop.onclick = (e) => { if (e.target === backdrop) closeBadgeModal(backdrop); };
+
+            let content;
+            if (badges.length === 0) {
+                content = `<div class="badge-modal-empty">No badges yet — get to work! 💪</div>`;
+            } else {
+                content = badges.map(b => {
+                    const def = BADGE_DEFS[b.id];
+                    if (!def) return '';
+                    const date = new Date(b.ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    return `<div class="badge-modal-item">
+                        <span class="badge-modal-icon">${def.icon}</span>
+                        <span class="badge-modal-label">${def.label}</span>
+                        <span class="badge-modal-date">${date}</span>
+                    </div>`;
+                }).join('');
+            }
+
+            backdrop.innerHTML = `
+                <div class="badge-modal">
+                    <div class="badge-modal-handle"></div>
+                    <div class="badge-modal-title">${user}'s Badges</div>
+                    <div class="badge-modal-scroll">
+                        <div class="badge-modal-row">${content}</div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(backdrop);
+        }
+
+        function closeBadgeModal(backdrop) {
+            backdrop.style.animation = 'backdropIn 0.15s ease-out reverse forwards';
+            setTimeout(() => backdrop.remove(), 150);
+        }
+
+        // Keep old name as alias so processAndRenderData call still works
+        function renderHallOfFame(monthlyTotals) {
+            renderBadgeStrips(monthlyTotals || {});
         }
 
         function showBadgeToast(user, badgeId) {
@@ -1416,7 +1383,7 @@
 
         // Initialize
         loadSavedUser();
-        renderHallOfFame({});
+        renderBadgeStrips({});
         updateOfflineBadge();
         fetchDataFromSheet();
     </script>
