@@ -107,7 +107,7 @@
             position: relative;
         }
         
-        .card { background: #1a1a1a; border-radius: 12px; padding: clamp(10px, 1.8dvh, 15px); border: 1px solid #262626; position: relative; flex: 1; min-height: 0; }
+        .card { background: #1a1a1a; border-radius: 12px; padding: clamp(10px, 1.8dvh, 15px); border: 1px solid #262626; position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; }
         .card-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: clamp(6px, 1dvh, 10px); }
         .card-title { 
             font-size: clamp(13px, 2dvh, 16px); 
@@ -128,19 +128,50 @@
         .chart-container { 
             display: flex; 
             justify-content: space-around; 
-            align-items: flex-end; 
-            height: clamp(120px, 20dvh, 175px);
+            align-items: flex-start;
+            flex: 1;
             padding-top: 5px; 
-            position: relative; 
+            position: relative;
+            min-height: 0;
         }
-        .bar-wrapper { display: flex; flex-direction: column; align-items: center; width: 32%; height: 100%; justify-content: flex-end; position: relative; cursor: pointer; }
+        .bar-wrapper { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            width: 32%; 
+            height: 100%;
+            position: relative; 
+            cursor: pointer;
+        }
+        .bar-wrapper-inner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            width: 100%;
+            justify-content: flex-end;
+            min-height: 0;
+        }
+        /* Fixed reserved height — always the same whether badges exist or not */
+        .bar-below {
+            flex-shrink: 0;
+            height: 46px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding-top: 5px;
+            gap: 3px;
+            width: 100%;
+        }
         
         .streak-badge { font-size: clamp(9px, 1.4dvh, 11px); font-weight: 800; color: #ff9500; margin-bottom: clamp(3px, 0.6dvh, 6px); background: rgba(255,149,0,0.1); padding: 2px 6px; border-radius: 8px; border: 1px solid rgba(255,149,0,0.2); }
         
         .bar-outer { 
             background: #2d2d2d; 
-            width: clamp(32px, 5vw, 42px);
-            height: clamp(70px, 13dvh, 110px);
+            width: clamp(36px, 9vw, 56px);
+            flex: 1;
+            min-height: clamp(80px, 14dvh, 140px);
             border-radius: 6px; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; position: relative; border: 1px solid #3a3a3a; 
         }
         
@@ -533,36 +564,48 @@
             <div class="chart-container">
                 <div class="bar-wrapper" id="wrap-Anthony" onclick="selectUser('Anthony')">
                     <div class="streak-badge" id="streak-Anthony">🔥 0</div>
-                    <div class="bar-outer">
-                        <div class="bar-count" id="count-Anthony">0</div>
-                        <div class="bar-layer layer-base" id="bar-base-Anthony"></div>
-                        <div class="bar-layer layer-backfill" id="bar-backfill-Anthony"></div>
-                        <div class="bar-layer layer-flame" id="bar-flame-Anthony"></div>
+                    <div class="bar-wrapper-inner">
+                        <div class="bar-outer">
+                            <div class="bar-count" id="count-Anthony">0</div>
+                            <div class="bar-layer layer-base" id="bar-base-Anthony"></div>
+                            <div class="bar-layer layer-backfill" id="bar-backfill-Anthony"></div>
+                            <div class="bar-layer layer-flame" id="bar-flame-Anthony"></div>
+                        </div>
                     </div>
-                    <div class="bar-label" id="bar-label-Anthony">Anthony</div>
-                    <div class="bar-badges" id="bar-badges-Anthony" onclick="event.stopPropagation(); openBadgeModal('Anthony')"></div>
+                    <div class="bar-below">
+                        <div class="bar-label" id="bar-label-Anthony">Anthony</div>
+                        <div class="bar-badges" id="bar-badges-Anthony" onclick="event.stopPropagation(); openBadgeModal('Anthony')"></div>
+                    </div>
                 </div>
                 <div class="bar-wrapper" id="wrap-Nick" onclick="selectUser('Nick')">
                     <div class="streak-badge" id="streak-Nick">🔥 0</div>
-                    <div class="bar-outer">
-                        <div class="bar-count" id="count-Nick">0</div>
-                        <div class="bar-layer layer-base" id="bar-base-Nick"></div>
-                        <div class="bar-layer layer-backfill" id="bar-backfill-Nick"></div>
-                        <div class="bar-layer layer-flame" id="bar-flame-Nick"></div>
+                    <div class="bar-wrapper-inner">
+                        <div class="bar-outer">
+                            <div class="bar-count" id="count-Nick">0</div>
+                            <div class="bar-layer layer-base" id="bar-base-Nick"></div>
+                            <div class="bar-layer layer-backfill" id="bar-backfill-Nick"></div>
+                            <div class="bar-layer layer-flame" id="bar-flame-Nick"></div>
+                        </div>
                     </div>
-                    <div class="bar-label" id="bar-label-Nick">Nick</div>
-                    <div class="bar-badges" id="bar-badges-Nick" onclick="event.stopPropagation(); openBadgeModal('Nick')"></div>
+                    <div class="bar-below">
+                        <div class="bar-label" id="bar-label-Nick">Nick</div>
+                        <div class="bar-badges" id="bar-badges-Nick" onclick="event.stopPropagation(); openBadgeModal('Nick')"></div>
+                    </div>
                 </div>
                 <div class="bar-wrapper" id="wrap-Chris" onclick="selectUser('Chris')">
                     <div class="streak-badge" id="streak-Chris">🔥 0</div>
-                    <div class="bar-outer">
-                        <div class="bar-count" id="count-Chris">0</div>
-                        <div class="bar-layer layer-base" id="bar-base-Chris"></div>
-                        <div class="bar-layer layer-backfill" id="bar-backfill-Chris"></div>
-                        <div class="bar-layer layer-flame" id="bar-flame-Chris"></div>
+                    <div class="bar-wrapper-inner">
+                        <div class="bar-outer">
+                            <div class="bar-count" id="count-Chris">0</div>
+                            <div class="bar-layer layer-base" id="bar-base-Chris"></div>
+                            <div class="bar-layer layer-backfill" id="bar-backfill-Chris"></div>
+                            <div class="bar-layer layer-flame" id="bar-flame-Chris"></div>
+                        </div>
                     </div>
-                    <div class="bar-label" id="bar-label-Chris">Chris</div>
-                    <div class="bar-badges" id="bar-badges-Chris" onclick="event.stopPropagation(); openBadgeModal('Chris')"></div>
+                    <div class="bar-below">
+                        <div class="bar-label" id="bar-label-Chris">Chris</div>
+                        <div class="bar-badges" id="bar-badges-Chris" onclick="event.stopPropagation(); openBadgeModal('Chris')"></div>
+                    </div>
                 </div>
             </div>
         </div>
