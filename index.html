@@ -272,6 +272,177 @@
             0%  { opacity: 0.7; }
             100%{ opacity: 0; }
         }
+        /* ── HALL OF FAME ── */
+        .hof-panel {
+            background: #1a1a1a;
+            border-radius: 12px;
+            border: 1px solid #262626;
+            padding: 10px 15px 12px 15px;
+            flex-shrink: 0;
+        }
+        .hof-title {
+            font-size: 10px;
+            font-weight: 800;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        .hof-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 6px;
+        }
+        .hof-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            min-width: 0;
+        }
+        .hof-name {
+            font-size: 10px;
+            font-weight: 800;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 8px;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .hof-name:active { background: #2d2d2d; }
+        .hof-name.expanded {
+            color: #4cd964;
+            border-color: #4cd964;
+            background: rgba(76,217,100,0.08);
+        }
+        /* Collapsed: show first 3 badges, hide rest */
+        .hof-badges-wrap {
+            width: 100%;
+            overflow: hidden;
+            min-height: 22px;
+            display: flex;
+            justify-content: center;
+        }
+        .hof-badges {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 1px;
+            transition: none;
+        }
+        /* Expanded drawer — spans full width below grid */
+        .hof-expand-drawer {
+            display: none;
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            background: #141414;
+            border-radius: 8px;
+            border: 1px solid #2a2a2a;
+            padding: 8px 10px;
+            margin-top: 8px;
+            flex-shrink: 0;
+        }
+        .hof-expand-drawer.open { display: block; }
+        .hof-expand-inner {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 4px;
+            align-items: center;
+        }
+        .hof-expand-header {
+            font-size: 9px;
+            font-weight: 800;
+            color: #4cd964;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+        .hof-badge {
+            font-size: 18px;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+        .hof-badge-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            flex-shrink: 0;
+        }
+        .hof-badge-label {
+            font-size: 8px;
+            color: #555;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .hof-empty {
+            font-size: 11px;
+            color: #333;
+        }
+        /* Monthly king crown indicator */
+        .hof-king-indicator {
+            font-size: 10px;
+            color: #ffcc00;
+            font-weight: 900;
+        }
+
+        /* ── BADGE TOAST ── */
+        .badge-toast {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            animation: toastFade 3s ease-in-out forwards;
+        }
+        .badge-toast-inner {
+            background: #1a1a1a;
+            border: 2px solid #4cd964;
+            border-radius: 20px;
+            padding: 20px 30px;
+            text-align: center;
+            box-shadow: 0 0 40px rgba(76,217,100,0.3), 0 8px 32px rgba(0,0,0,0.8);
+            transform: scale(1);
+        }
+        .badge-toast-icon { font-size: 48px; line-height: 1; margin-bottom: 6px; }
+        .badge-toast-name { font-size: 13px; color: #4cd964; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; }
+        .badge-toast-label { font-size: 18px; color: #fff; font-weight: 900; margin-top: 4px; letter-spacing: 0.5px; }
+        @keyframes toastFade {
+            0%   { opacity: 0; transform: scale(0.8); }
+            15%  { opacity: 1; transform: scale(1.05); }
+            25%  { transform: scale(1); }
+            70%  { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        /* ── BAR TAP HIGHLIGHT ── */
+        .bar-wrapper { cursor: pointer; }
+        .bar-wrapper:active .bar-outer { border-color: #4cd964; box-shadow: 0 0 12px rgba(76,217,100,0.4); }
+        .bar-wrapper.selected-user .bar-label {
+            color: #4cd964;
+        }
+        .bar-wrapper.selected-user .bar-outer {
+            border-color: #4cd964;
+            box-shadow: 0 0 10px rgba(76,217,100,0.25);
+        }
+
+        /* ── OFFLINE QUEUE INDICATOR ── */
+        .offline-badge {
+            background: #ff3b3b;
+            color: #fff;
+            font-size: 9px;
+            font-weight: 900;
+            padding: 2px 6px;
+            border-radius: 8px;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -293,9 +464,10 @@
     <div class="main-content">
         <div class="card">
             <div class="card-header-row">
-                <div class="card-title">Gains</div>
+                <div class="card-title">Dem Gains 'Do</div>
                 <div class="status-container">
                     <div class="loading-status" id="load-status">Syncing...</div>
+                    <span class="offline-badge" id="offline-badge">QUEUED</span>
                     <button class="refresh-btn" onclick="fetchDataFromSheet()" title="Force Refresh">🔄</button>
                 </div>
             </div>
@@ -307,7 +479,7 @@
             </div>
             
             <div class="chart-container">
-                <div class="bar-wrapper" id="wrap-Anthony">
+                <div class="bar-wrapper" id="wrap-Anthony" onclick="selectUser('Anthony')">
                     <div class="streak-badge" id="streak-Anthony">🔥 0</div>
                     <div class="bar-outer">
                         <div class="bar-count" id="count-Anthony">0</div>
@@ -317,7 +489,7 @@
                     </div>
                     <div class="bar-label">Anthony</div>
                 </div>
-                <div class="bar-wrapper" id="wrap-Nick">
+                <div class="bar-wrapper" id="wrap-Nick" onclick="selectUser('Nick')">
                     <div class="streak-badge" id="streak-Nick">🔥 0</div>
                     <div class="bar-outer">
                         <div class="bar-count" id="count-Nick">0</div>
@@ -327,7 +499,7 @@
                     </div>
                     <div class="bar-label">Nick</div>
                 </div>
-                <div class="bar-wrapper" id="wrap-Chris">
+                <div class="bar-wrapper" id="wrap-Chris" onclick="selectUser('Chris')">
                     <div class="streak-badge" id="streak-Chris">🔥 0</div>
                     <div class="bar-outer">
                         <div class="bar-count" id="count-Chris">0</div>
@@ -352,6 +524,28 @@
             <div class="accordion-content" id="trends-content">
                 <div style="text-align:center; padding:10px; color:#555;">Processing data...</div>
             </div>
+        </div>
+    </div>
+
+    <div class="hof-panel">
+        <div class="hof-title">🏆 Hall of Fame</div>
+        <div class="hof-grid">
+            <div class="hof-col">
+                <div class="hof-name" id="hof-name-Anthony" onclick="toggleHofExpand('Anthony')">Anthony</div>
+                <div class="hof-badges-wrap"><div class="hof-badges" id="hof-Anthony"><span class="hof-empty">—</span></div></div>
+            </div>
+            <div class="hof-col">
+                <div class="hof-name" id="hof-name-Nick" onclick="toggleHofExpand('Nick')">Nick</div>
+                <div class="hof-badges-wrap"><div class="hof-badges" id="hof-Nick"><span class="hof-empty">—</span></div></div>
+            </div>
+            <div class="hof-col">
+                <div class="hof-name" id="hof-name-Chris" onclick="toggleHofExpand('Chris')">Chris</div>
+                <div class="hof-badges-wrap"><div class="hof-badges" id="hof-Chris"><span class="hof-empty">—</span></div></div>
+            </div>
+        </div>
+        <div class="hof-expand-drawer" id="hof-drawer">
+            <div class="hof-expand-header" id="hof-drawer-title">All Badges</div>
+            <div class="hof-expand-inner" id="hof-drawer-content"></div>
         </div>
     </div>
 
@@ -388,13 +582,237 @@
     </div>
 
     <script>
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxxxrcbUtjxBVHJl_LaStWLn9fhnon0S79rewb1D1W_kMtQXbE7gjjWySoTtXVDmahO/exec"; 
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxxxrcbUtjxBVHJl_LaStWLn9fhnon0S79rewb1D1W_kMtQXbE7gjjWySoTtXVDmahO/exec";
 
         let currentCounter = 0;
-        let masterSheetData = []; 
-        let selectedViewISOStr = new Date().toLocaleDateString('en-CA'); 
+        let masterSheetData = [];
+        let selectedViewISOStr = new Date().toLocaleDateString('en-CA');
         const GOAL = 100;
-        const MONTHLY_BENCHMARK = 3000; 
+        const MONTHLY_BENCHMARK = 3000;
+
+        // ── OFFLINE QUEUE ──
+        let submitQueue = JSON.parse(localStorage.getItem('rm_queue') || '[]');
+
+        function saveQueue() {
+            localStorage.setItem('rm_queue', JSON.stringify(submitQueue));
+        }
+
+        function updateOfflineBadge() {
+            const badge = document.getElementById('offline-badge');
+            if (submitQueue.length > 0) {
+                badge.style.display = 'inline-block';
+                badge.innerText = `${submitQueue.length} QUEUED`;
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        function flushQueue() {
+            if (submitQueue.length === 0) return;
+            const item = submitQueue[0];
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST', mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(item)
+            }).then(() => {
+                submitQueue.shift();
+                saveQueue();
+                updateOfflineBadge();
+                if (submitQueue.length > 0) flushQueue();
+                else fetchDataFromSheet();
+            }).catch(() => {});
+        }
+
+        // ── REMEMBER LAST USER ──
+        function selectUser(name) {
+            const sel = document.getElementById('user-select');
+            sel.value = name;
+            localStorage.setItem('rm_last_user', name);
+            ['Anthony','Nick','Chris'].forEach(u => {
+                document.getElementById(`wrap-${u}`).classList.toggle('selected-user', u === name);
+            });
+        }
+
+        function loadSavedUser() {
+            const saved = localStorage.getItem('rm_last_user');
+            if (saved) selectUser(saved);
+            else selectUser('Chris'); // default
+        }
+
+        // Also save when dropdown changes manually
+        document.getElementById('user-select').addEventListener('change', function() {
+            selectUser(this.value);
+        });
+
+        // ── BADGE SYSTEM ──
+        const BADGE_DEFS = {
+            century:     { icon: '🏆', label: 'Century',      desc: 'Hit 100 reps in a day' },
+            double:      { icon: '⚡', label: 'Double Down',  desc: 'Hit 200 reps in a day' },
+            beast:       { icon: '💪', label: 'Beast Mode',   desc: '100 reps in one submit' },
+            speedDemon:  { icon: '⚡', label: 'Speed Demon',  desc: 'Hit 100 before noon' },
+            streak7:     { icon: '🔥', label: 'Week Warrior', desc: '7-day streak' },
+            streak14:    { icon: '📅', label: 'Fortnight',    desc: '14-day streak' },
+            streak21:    { icon: '💫', label: 'Three Weeks',  desc: '21-day streak' },
+            streak30:    { icon: '👑', label: 'Month Master', desc: '30-day streak' },
+            monthlyKing: { icon: '👑', label: 'Monthly King', desc: 'Most reps in a month' },
+        };
+
+        // Store badges as ordered arrays per user: [ {id, ts}, ... ]
+        // Migrate old format if needed
+        let rawBadgeStore = JSON.parse(localStorage.getItem('rm_badges_v2') || 'null');
+        if (!rawBadgeStore) {
+            rawBadgeStore = { Anthony: [], Nick: [], Chris: [] };
+            // Migrate from old format if present
+            const old = JSON.parse(localStorage.getItem('rm_badges') || 'null');
+            if (old) {
+                ['Anthony','Nick','Chris'].forEach(u => {
+                    if (old[u]) {
+                        Object.entries(old[u]).forEach(([id, count]) => {
+                            for (let i = 0; i < count; i++) {
+                                rawBadgeStore[u].push({ id, ts: Date.now() });
+                            }
+                        });
+                    }
+                });
+            }
+            localStorage.setItem('rm_badges_v2', JSON.stringify(rawBadgeStore));
+        }
+        let badgeStore = rawBadgeStore;
+
+        function saveBadges() {
+            localStorage.setItem('rm_badges_v2', JSON.stringify(badgeStore));
+        }
+
+        function awardBadge(user, badgeId) {
+            if (!badgeStore[user]) badgeStore[user] = [];
+            badgeStore[user].push({ id: badgeId, ts: Date.now() });
+            saveBadges();
+            renderHallOfFame();
+            showBadgeToast(user, badgeId);
+        }
+
+        let hofExpandedUser = null;
+
+        function toggleHofExpand(user) {
+            const drawer = document.getElementById('hof-drawer');
+            const drawerContent = document.getElementById('hof-drawer-content');
+            const drawerTitle = document.getElementById('hof-drawer-title');
+
+            // Deselect all name labels
+            ['Anthony','Nick','Chris'].forEach(u => {
+                document.getElementById(`hof-name-${u}`).classList.remove('expanded');
+            });
+
+            if (hofExpandedUser === user) {
+                // Collapse
+                hofExpandedUser = null;
+                drawer.classList.remove('open');
+                return;
+            }
+
+            hofExpandedUser = user;
+            document.getElementById(`hof-name-${user}`).classList.add('expanded');
+            drawer.classList.add('open');
+            drawerTitle.innerText = `${user}'s Badges`;
+
+            const badges = badgeStore[user] || [];
+            if (badges.length === 0) {
+                drawerContent.innerHTML = '<span style="color:#555; font-size:12px;">No badges yet — get to work! 💪</span>';
+                return;
+            }
+
+            drawerContent.innerHTML = badges.map(b => {
+                const def = BADGE_DEFS[b.id];
+                if (!def) return '';
+                const date = new Date(b.ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                return `<div class="hof-badge-item" title="${def.desc}">
+                    <span class="hof-badge">${def.icon}</span>
+                    <span class="hof-badge-label">${def.label}</span>
+                    <span class="hof-badge-label" style="color:#3a3a3a">${date}</span>
+                </div>`;
+            }).join('');
+        }
+
+        function renderHallOfFame(monthlyTotals) {
+            // Determine live monthly king
+            let kingUser = null;
+            if (monthlyTotals) {
+                const max = Math.max(...Object.values(monthlyTotals));
+                if (max > 0) {
+                    const kings = Object.entries(monthlyTotals).filter(([,v]) => v === max);
+                    if (kings.length === 1) kingUser = kings[0][0];
+                }
+            }
+
+            ['Anthony','Nick','Chris'].forEach(user => {
+                const el = document.getElementById(`hof-${user}`);
+                const badges = badgeStore[user] || [];
+                const nameEl = document.getElementById(`hof-name-${user}`);
+
+                // Update live king indicator in name
+                const isKing = user === kingUser;
+                nameEl.innerHTML = isKing ? `${user} 👑` : user;
+
+                if (badges.length === 0) {
+                    el.innerHTML = '<span class="hof-empty">—</span>';
+                    return;
+                }
+
+                // Show first 3, fade 4th as hint there's more
+                const preview = badges.slice(0, 4);
+                el.innerHTML = preview.map((b, i) => {
+                    const def = BADGE_DEFS[b.id];
+                    if (!def) return '';
+                    const faded = i === 3 && badges.length > 3 ? 'opacity:0.35' : '';
+                    return `<span class="hof-badge" style="${faded}" title="${def.label}">${def.icon}</span>`;
+                }).join('');
+
+                // If more than 4, append count hint
+                if (badges.length > 4) {
+                    el.innerHTML += `<span style="font-size:9px;color:#555;font-weight:800;align-self:center">+${badges.length - 3}</span>`;
+                }
+
+                // Re-render drawer if this user is expanded
+                if (hofExpandedUser === user) toggleHofExpand(user); // close
+                // (don't re-open — let user re-tap)
+            });
+        }
+
+        function showBadgeToast(user, badgeId) {
+            const def = BADGE_DEFS[badgeId];
+            if (!def) return;
+            const toast = document.createElement('div');
+            toast.className = 'badge-toast';
+            toast.innerHTML = `
+                <div class="badge-toast-inner">
+                    <div class="badge-toast-icon">${def.icon}</div>
+                    <div class="badge-toast-name">${user}</div>
+                    <div class="badge-toast-label">${def.label}</div>
+                </div>
+            `;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3100);
+        }
+
+        // Check monthly king at month end
+        function checkMonthlyKing(monthlyTotals) {
+            const now = new Date();
+            const lastCheckedKey = 'rm_king_checked';
+            const lastChecked = localStorage.getItem(lastCheckedKey);
+            const thisMonth = `${now.getFullYear()}-${now.getMonth()}`;
+
+            // Only award on the first day of a new month for the previous month
+            if (now.getDate() === 1 && lastChecked !== thisMonth) {
+                localStorage.setItem(lastCheckedKey, thisMonth);
+                const max = Math.max(...Object.values(monthlyTotals));
+                if (max > 0) {
+                    const kings = Object.entries(monthlyTotals).filter(([,v]) => v === max);
+                    if (kings.length === 1) {
+                        awardBadge(kings[0][0], 'monthlyKing');
+                    }
+                }
+            }
+        }
 
         function adjustCounter(amount) {
             currentCounter += amount;
@@ -597,18 +1015,36 @@
                     }).join('')}
                 </div>
             `;
+
+            renderHallOfFame(monthlyTotals);
+            checkMonthlyKing(monthlyTotals);
         }
 
         function fetchDataFromSheet() {
             document.getElementById('load-status').innerText = "Syncing...";
+
+            // Render cached data instantly if available
+            const cached = localStorage.getItem('rm_cache');
+            if (cached && masterSheetData.length === 0) {
+                try {
+                    masterSheetData = JSON.parse(cached);
+                    processAndRenderData();
+                } catch(e) {}
+            }
+
             fetch(GOOGLE_SCRIPT_URL)
                 .then(r => r.json())
                 .then(data => {
                     masterSheetData = Array.isArray(data) ? data : [];
+                    localStorage.setItem('rm_cache', JSON.stringify(masterSheetData));
                     processAndRenderData();
                     document.getElementById('load-status').innerText = "Online";
+                    flushQueue();
                 })
-                .catch(() => document.getElementById('load-status').innerText = "Offline");
+                .catch(() => {
+                    document.getElementById('load-status').innerText = "Offline";
+                    updateOfflineBadge();
+                });
         }
 
         function submitLog() {
@@ -623,14 +1059,44 @@
                 .reduce((sum, e) => sum + e.reps, 0);
 
             const timestamp = new Date().toISOString();
-            masterSheetData.unshift({ name: user, reps, timestamp });
+            const entry = { name: user, reps, timestamp };
+            masterSheetData.unshift(entry);
+            localStorage.setItem('rm_cache', JSON.stringify(masterSheetData));
 
             processAndRenderData();
 
-            // Capture total AFTER and current streak
             const newTotal = prevTotal + reps;
             const streakEl = document.getElementById(`streak-${user}`);
             const streakCount = streakEl ? parseInt(streakEl.innerText.replace('🔥','').trim()) || 0 : 0;
+
+            // ── Award badges ──
+            // Century — first time hitting 100 today
+            if (prevTotal < GOAL && newTotal >= GOAL) {
+                awardBadge(user, 'century');
+                // Speed demon — hit 100 before noon
+                if (new Date().getHours() < 12) awardBadge(user, 'speedDemon');
+            }
+            // Double Down — first time hitting 200 today
+            if (prevTotal < GOAL * 2 && newTotal >= GOAL * 2) {
+                awardBadge(user, 'double');
+            }
+            // Beast mode — 100+ reps in one submit
+            if (reps >= GOAL) {
+                awardBadge(user, 'beast');
+            }
+            // Streak milestone badges
+            if (streakCount > 0) {
+                const streakBadgeMap = { 7: 'streak7', 14: 'streak14', 21: 'streak21', 30: 'streak30' };
+                const badgeId = streakBadgeMap[streakCount];
+                if (badgeId) {
+                    const milestoneKey = `${user}_streak_${streakCount}`;
+                    if (!firedStreakMilestones[milestoneKey]) {
+                        firedStreakMilestones[milestoneKey] = true;
+                        awardBadge(user, badgeId);
+                    }
+                }
+            }
+
             checkAndTriggerAnimations(user, prevTotal, newTotal, streakCount);
 
             currentCounter = 0;
@@ -641,15 +1107,18 @@
             document.getElementById('load-status').innerText = "Saving...";
 
             fetch(GOOGLE_SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
+                method: 'POST', mode: 'no-cors',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: user, reps, timestamp })
+                body: JSON.stringify(entry)
             }).then(() => {
                 setTimeout(() => { btn.disabled = false; fetchDataFromSheet(); }, 800);
             }).catch(() => {
+                // Queue for later
+                submitQueue.push(entry);
+                saveQueue();
+                updateOfflineBadge();
                 btn.disabled = false;
-                document.getElementById('load-status').innerText = "Sync Error";
+                document.getElementById('load-status').innerText = "Offline – Queued";
             });
         }
 
@@ -908,6 +1377,9 @@
         // ── END ANIMATION ENGINE ──────────────────────────────────────
 
         // Initialize
+        loadSavedUser();
+        renderHallOfFame({});
+        updateOfflineBadge();
         fetchDataFromSheet();
     </script>
 </body>
